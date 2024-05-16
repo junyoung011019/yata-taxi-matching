@@ -39,7 +39,11 @@ app.post('/Login', async (req, res) => {
     const LoginUser= await users.findOne({ Email: Email });
     //LoginUser가 존재하고, 입력한 비밀번호(Password)와 서버에 저장된 비밀번호(HashedPassword)가 일치하는지 확인
     if (LoginUser&&await bcrypt.compare(Password,LoginUser.HashedPassword)) {
-      res.status(200).send({ success : true });
+      //jwt 액세스 키 전달
+      const payload = { Email: req.body.Email };
+      const options = { expiresIn: '5m' };
+      const token = jwt.sign(payload, secretKey, options);
+      res.status(200).json({ success: true, token: token });
     } else {
       res.status(401).send({ success : false });
     }
@@ -135,27 +139,26 @@ app.post('/Recruiting', async function (req, res) {
 })
 
 
-app.post('/jwt', async function (req, res) {
-  console.log(req.body.test);
-  const payload={test: 'test'};
-  const token=jwt.sign(payload,secretKey);
-  console.log(token)
-})
+app.post('/Protected', (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader.split(' ')[1]
 
-app.post('/JwtCheck', async function (req, res) {
-  console.log(req.body.input);
-  const receivedToken = req.body.input;
-  try {
-    const decoded = jwt.verify(receivedToken, secretKey);
-    console.log(decoded);
-    // 사용자의 신원 확인
-  } catch (err) {
-    // 토큰이 유효하지 않은 경우 에러 처리
+  if (!token) {
+      return res.status(401).send('Access Denied: No Token Provided!');
   }
-  
-})
 
-
+  try {
+      const decoded = jwt.verify(token, secretKey);
+      res.json({ message: 'Protected route accessed!', decoded });
+  } catch (err) {
+      // 만료된 토큰 처리
+      if (err.name === 'TokenExpiredError') {
+          return res.status(401).send('Token Expired');
+      }
+      // 다른 모든 인증 오류 처리
+      res.status(400).send('Invalid Token');
+  }
+});
 
 
 https.createServer(options,app).listen(443, () => {
