@@ -15,7 +15,7 @@ class Recruiting2 extends StatefulWidget {
 class _Recruiting2State extends State<Recruiting2> {
   int selectedRouteButtonIndex = 0; // 경로 버튼의 선택 상태를 추적
   int selectedTimeButtonIndex = 0;
-  String destination = "school";
+  String destination = "학교";
   int startTime = 10;
 
   @override
@@ -88,7 +88,7 @@ class _Recruiting2State extends State<Recruiting2> {
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        destination = "school";
+                        destination = "남서울대학교";
                         setState(() {
                           selectedRouteButtonIndex = 0;
                         });
@@ -117,7 +117,7 @@ class _Recruiting2State extends State<Recruiting2> {
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     ElevatedButton(
                       onPressed: () {
-                        destination = "station";
+                        destination = "성환역";
                         setState(() {
                           selectedRouteButtonIndex = 1;
                         });

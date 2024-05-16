@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yatatest2/function/toastMessage.dart';
 import '../function/routing.dart';
+import '../function/userPost.dart';
 import '../struct/userState.dart';
 class Member_yataMain extends StatefulWidget {
   const Member_yataMain({super.key});
@@ -10,7 +11,7 @@ class Member_yataMain extends StatefulWidget {
 }
 
 class _Member_yataMainState extends State<Member_yataMain> {
-
+  UserPost user = new UserPost();
 
   @override
   Widget build(BuildContext context) {
@@ -262,6 +263,7 @@ class _Member_yataMainState extends State<Member_yataMain> {
                     .of(context)
                     .size
                     .height * 0.04),
+                ElevatedButton(onPressed: () {user.postAccess();} , child: Text("테스트토큰"))
               ],
             ),
           ),

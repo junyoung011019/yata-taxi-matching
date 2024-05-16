@@ -29,8 +29,27 @@ class _RecruitmentRoomState extends State<RecruitmentRoom> {
   Widget build(BuildContext context) {
     return Scaffold (
       appBar: AppBar(
+        title: Text(
+          '모집 방',
+          style: TextStyle(
+            fontSize: 20, // 텍스트 크기 조정
+            fontWeight: FontWeight.bold, // 굵은 글꼴
+            color: Colors.black87, // 텍스트 색상 조정
+          ),
+        ),
         centerTitle: true,
-        title: Text("모집 방"),
+        // 제목 가운데 정렬
+        backgroundColor: Colors.white,
+        // 배경색 조정
+        elevation: 0,
+        // 그림자 없애기
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            // 뒤로가기 버튼을 눌렀을 때 실행되는 동작
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: SingleChildScrollView(
         child: Column (
@@ -73,29 +92,40 @@ class _RecruitmentRoomState extends State<RecruitmentRoom> {
 }
 
 Widget roomContainer(BuildContext context, roomTitle, int partyCount, String destination, int startTime) {
-  return Container(
-
-    color: Colors.green,
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
+  return Column(
+      // mainAxisSize: MainAxisAlignment.start,
       children: [
-        Divider(),
-        Text(roomTitle),
-        Text("모집인원: $partyCount"),
-        Text("목적지: $destination"),
-        Text("출발시간: $startTime분 후"),
-        TextButton(
-            child: Text("참가하기"),
-            onPressed: ()   { handleAction(context, "채팅방",
-                roomTitle: roomTitle,
-                partyCount: partyCount,
-                destination: destination,
-                startTime: startTime); }
+        SizedBox(height: 20,),
+        Container(
+          padding: EdgeInsets.all(10), // 텍스트 블록의 패딩 설정
+          width: MediaQuery.of(context).size.width * 0.85, // 화면 너비와 같게 설정
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(
+              color: Color(0xFFFAD232),
+              width: 2,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // 자식의 최소 높이만 사용
+            children: [
+              Text(roomTitle),
+              Text('모집 인원: $partyCount'),
+              Text('경로: $destination'),
+              Text('출발 시간: $startTime분 후'),
+              TextButton(
+                onPressed: ()   { handleAction(context, "채팅방",
+                    roomTitle: roomTitle,
+                    partyCount: partyCount,
+                    destination: destination,
+                    startTime: startTime); },
+                child: Text('참가하기'),
+              ),
+            ],
+          ),
         ),
-        Divider(),
       ],
-    ),
-  );
+    );
 }
 
 //

@@ -1,15 +1,40 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as Http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'auth_dio.dart';
 import 'package:yatatest2/struct/recruitRoomStruct.dart';
+
 class UserPost {
   String userPost = '.9';
   String output = "";
   final univ_key = dotenv.get("UNIV_KEY");
   final univ_url = dotenv.get("UNIV_URL");
   final url = dotenv.get("URL");
+  final storage = new FlutterSecureStorage();
 
+  void postAccess() async {
+    try {
+      String? accessToken = await storage.read(key: 'ACCESS_TOKEN');
+      if (accessToken != null) {
+        final response = await Http.post(
+          Uri.parse(url + "/Protected"),
+          headers: <String, String>{
+            'Authorization': accessToken,
+          },
+        );
+        final responseData = json.decode(response.body);
+        print("토큰 만료?: ${responseData["message"]}");
+
+
+      } else {
+        print('Access token is null.');
+        // 이 경우에 대한 처리를 추가하세요.
+      }
+    } catch (er) {
+      print('Error: $er');
+    }
+  }
 
   //USER 회원가입 post 요청
   void post_signUp_data(List<String> user) async {
@@ -28,6 +53,7 @@ class UserPost {
   }
   //USER 로그인 post 요청
   Future<bool> post_logIn_data(List<String> user) async {
+
     try {
       final response = await Http.post(Uri.parse(url + "/logIn"), body: {
         "Email": user[0],
@@ -39,6 +65,10 @@ class UserPost {
         final responseData = json.decode(response.body);
         print("로그인 post 요청결과: ");
         print(responseData['success']);
+
+        await storage.write(key: 'ACCESS_TOKEN', value: responseData['token']);
+        // await storage.write(key: 'REFRESH_TOKEN', value: responseData['refreshToken']);
+
         return responseData['success'];//responseData['success'];
       }
       else return false;

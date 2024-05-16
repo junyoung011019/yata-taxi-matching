@@ -3,7 +3,7 @@ import 'package:yatatest2/function/toastMessage.dart';
 import 'package:yatatest2/struct/userState.dart';
 import 'function/routing.dart';
 import 'function/userPost.dart';
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class LogIn extends StatefulWidget {
   const LogIn({super.key});
 
@@ -17,6 +17,7 @@ class _LogInState extends State<LogIn> {
   bool _isPasswordVisible = false;
   UserPost user = new UserPost();
   List<String> userInfo = ['',''];
+  final storage = new FlutterSecureStorage();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,6 +119,9 @@ class _LogInState extends State<LogIn> {
                         userInfo[1] = _textControllers[1].text;
                         bool logIn = await user.post_logIn_data(userInfo);
                         if(logIn) {
+                          String? accessToken = await storage.read(key: 'ACCESS_TOKEN');
+                          print('ACCESS_TOKEN: $accessToken');
+
                           user_state.set_loginState(true);
                           Navigator.pop(context);
                           handleAction(context,"회원메인");
