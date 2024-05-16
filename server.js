@@ -144,19 +144,19 @@ app.post('/Protected', (req, res) => {
   const token = authHeader.split(' ')[1]
 
   if (!token) {
-      return res.status(401).send('Access Denied: No Token Provided!');
+      return res.status(401).send('Access Token / Access Denied: No Token Provided!');
   }
 
   try {
       const decoded = jwt.verify(token, secretKey);
-      res.json({ message: 'Protected route accessed!', decoded });
+      res.json({ message: 'Access Token / Protected route accessed!', decoded });
   } catch (err) {
       // 만료된 토큰 처리
       if (err.name === 'TokenExpiredError') {
-          return res.status(401).send('Token Expired');
+          return res.status(401).send('Access Token / Token Expired');
       }
       // 다른 모든 인증 오류 처리
-      res.status(400).send('Invalid Token');
+      res.status(400).send('Access Token / Invalid Token');
   }
 });
 
