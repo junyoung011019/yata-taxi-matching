@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:yatatest2/chatRoom.dart';
 import 'package:yatatest2/function/toastMessage.dart';
@@ -9,6 +10,7 @@ import '../recruiting/recruiting2.dart';
 import '../recruiting/recruiting3.dart';
 import '../recruitmentRoom_page.dart';
 import '../struct/userState.dart';
+import '../yataMain/yataMain.dart';
 
 
 
@@ -44,6 +46,41 @@ void handleAction(BuildContext context, String action,
   }
     if (user_state.loginState) {
     switch (action) {
+      case "메인":
+        Navigator.push(context,
+            MaterialPageRoute(
+                settings: RouteSettings(name: "ymain"),
+                builder: (context) => YataMain()));
+        break;
+      case "로그인 만료":
+        showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              title: Text('로그인 만료'),
+              content: Text('로그인이 만료되었습니다. 다시 로그인해주세요.'),
+              actions: [
+                CupertinoDialogAction(
+                  child: Text('확인'),
+                  onPressed: () {
+                    Navigator.popUntil(context, ModalRoute.withName("memberMain"));
+                    Navigator.pop(context);
+                    // Navigator.pop(context); // 대화 상자 닫기
+                    // 로그인 페이지로 이동
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        settings: RouteSettings(name: "login"),
+                        builder: (context) => LogIn(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        );
+        break;
       case "모집방":
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => RecruitmentRoom()));

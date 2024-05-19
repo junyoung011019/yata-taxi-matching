@@ -106,7 +106,7 @@ class UserPost {
 
       final response = await dio.post(url + "/Recruiting", data: data);
 
-      print("로그인 post 요청: $response");
+      print("모집하기 post 요청: $response");
       if(response.statusCode == 200) {
         // final responseData = json.decode(response.data);
         print("모집하기 post 요청성공");

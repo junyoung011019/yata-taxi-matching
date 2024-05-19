@@ -48,7 +48,7 @@ Future<Dio> authDio(BuildContext context) async {
 
           // . . .
           // 로그인 만료 dialog 발생 후 로그인 페이지로 이동
-          handleActionn(context, "로그인");
+          handleAction(context, "로그인 만료");
           // . . .
           // reject되나 확인
           return handler.reject(error);
@@ -96,25 +96,4 @@ Future<Dio> authDio(BuildContext context) async {
   }));
 
   return dio;
-}
-
-void handleActionn(BuildContext context, String action) {
-  // 로그인 만료 dialog 표시
-  showDialog(
-    context: context,
-    builder: (context) => CupertinoAlertDialog(
-      title: Text('로그인 만료'),
-      content: Text('로그인이 만료되었습니다. 다시 로그인해주세요.'),
-      actions: [
-        CupertinoDialogAction(
-          child: Text('확인'),
-          onPressed: () {
-            // 로그인 페이지로 이동
-            handleAction(context, "로그인");
-
-          },
-        ),
-      ],
-    ),
-  );
 }
