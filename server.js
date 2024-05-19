@@ -32,8 +32,8 @@ const options = {
 const CreateJwtToken = async function(Email){
   const payloadA = { Email: Email, iss:"YATA", roles:"user", keyName:"access" };
   const payloadR = { Email: Email, iss:"YATA", roles:"user", keyName:"refresh" };
-  const accessToken = jwt.sign(payloadA, AccessKey, { expiresIn: '10m' });
-  const refreshToken = jwt.sign(payloadR, RefreshKey, { expiresIn: '30m' }, currentTime);
+  const accessToken = jwt.sign(payloadA, AccessKey, { expiresIn: '2m' });
+  const refreshToken = jwt.sign(payloadR, RefreshKey, { expiresIn: '5m' }, currentTime);
   
   try{
       await client.connect(); // MongoDB 클라이언트 연결
