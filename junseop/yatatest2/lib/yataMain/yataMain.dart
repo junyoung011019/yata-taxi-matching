@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:yatatest2/signup_page.dart';
+import 'package:yatatest2/struct/userState.dart';
+import '../function/toastMessage.dart';
 import '../function/userPost.dart';
 import '../function/routing.dart';
 class YataMain extends StatefulWidget {
@@ -46,7 +49,7 @@ class _YataMainState extends State<YataMain> {
                 SizedBox(height: MediaQuery.of(context).size.height * 0.1),
                 Flexible(
                   child: ElevatedButton(
-                    onPressed: () => handleAction(context, "모집하기1"),
+                    onPressed: () => showSnackBar(context, "로그인 필요"),
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.all(10),
                       backgroundColor: Color(0xFFFAD232),
@@ -75,7 +78,7 @@ class _YataMainState extends State<YataMain> {
                 SizedBox(height: MediaQuery.of(context).size.height * 0.04),
                 Flexible(
                   child: ElevatedButton(
-                    onPressed: () => handleAction(context, "모집방"),
+                    onPressed: () => showSnackBar(context, "로그인 필요"),
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.all(10),
                       backgroundColor: Color(0xFFFAD232),
@@ -104,7 +107,7 @@ class _YataMainState extends State<YataMain> {
                 SizedBox(height: MediaQuery.of(context).size.height * 0.04),
                 Flexible(
                   child: ElevatedButton(
-                    onPressed: () => handleAction(context, "빠른매칭"),
+                    onPressed: () => showSnackBar(context, "로그인 필요"),
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.all(10),
                       backgroundColor: Color(0xFFFAD232),
@@ -194,6 +197,15 @@ class _YataMainState extends State<YataMain> {
                   ],
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+                TextButton(onPressed: () async {
+                  final storage = new FlutterSecureStorage();
+                  final accessToken = await storage.read(key: 'ACCESS_TOKEN');
+                  final refreshToken = await storage.read(key: 'REFRESH_TOKEN');
+                  print('ACCESS_TOKEN: $accessToken');
+                  print('REFRESH_TOKEN: $refreshToken');
+                  user_state.set_loginState(true);
+                  handleAction(context, "회원메인");
+                }, child: Text("로그인해버리기"))
               ],
             ),
           ),

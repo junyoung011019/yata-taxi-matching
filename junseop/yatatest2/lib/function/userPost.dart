@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as Http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:yatatest2/function/routing.dart';
 import 'dart:convert';
 import 'auth_dio.dart';
 import 'package:yatatest2/struct/recruitRoomStruct.dart';
@@ -16,15 +18,21 @@ class UserPost {
   void postAccess() async {
     try {
       String? accessToken = await storage.read(key: 'ACCESS_TOKEN');
+      print("accessToken 불러옴 $accessToken");
       if (accessToken != null) {
-        final response = await Http.post(
+        final response = await Http.get(
           Uri.parse(url + "/Protected"),
           headers: <String, String>{
-            'Authorization': accessToken,
+            'Authorization': 'Bearer $accessToken',
+            // 'Content-Type': 'application/json',
           },
         );
+        if (response.statusCode == 401) {
+          final responseDataa = json.decode(response.body);
+          print("회원가입 post 요청 실패: ${response.body}");
+        }
         final responseData = json.decode(response.body);
-        print("토큰 만료?: ${responseData["message"]}");
+        print("accessToken: ${responseData["accessToken"]}");
 
 
       } else {
@@ -41,33 +49,43 @@ class UserPost {
     try {
       final response = await Http.post(Uri.parse(url + "/SignUp"), body: {
         "Email": user[0],
-        "PassWord": user[1],
+        "Password": user[1],
         "UserName": user[2],
         "NickName": user[3],
         "Phone": user[4],
         "AccountNumber": user[5],
         "Bank": user[6],
       });
-      print("회원가입 post 요청: $response.body");
+      print("회원가입 post 요청 ");
+
+      if(response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        print("회원가입 post 요청결과: ");
+        print(responseData['success']);
+        print("accessToken: ${responseData["accessToken"]}");
+        print("accessToken: ${responseData["refreshToken"]}");
+        await storage.write(key: 'ACCESS_TOKEN', value: responseData['accessToken']);
+        await storage.write(key: 'REFRESH_TOKEN', value: responseData['refreshToken']);
+      }
     } catch (er) {}
   }
   //USER 로그인 post 요청
   Future<bool> post_logIn_data(List<String> user) async {
 
     try {
-      final response = await Http.post(Uri.parse(url + "/logIn"), body: {
+      final response = await Http.post(Uri.parse(url + "/Login"), body: {
         "Email": user[0],
         "Password": user[1],
       });
 
-      print("로그인 post 요청: $response.body");
+
       if(response.statusCode == 200) {
         final responseData = json.decode(response.body);
         print("로그인 post 요청결과: ");
         print(responseData['success']);
 
-        await storage.write(key: 'ACCESS_TOKEN', value: responseData['token']);
-        // await storage.write(key: 'REFRESH_TOKEN', value: responseData['refreshToken']);
+        await storage.write(key: 'ACCESS_TOKEN', value: responseData['accessToken']);
+        await storage.write(key: 'REFRESH_TOKEN', value: responseData['refreshToken']);
 
         return responseData['success'];//responseData['success'];
       }
@@ -75,9 +93,9 @@ class UserPost {
     } catch (er) {return false;}
   }
   //모집하기 요청 Dio로 해보기
-  Future<bool> post_recruiting_data(String roomTitle, int partyCount, String destination, int startTime) async {
+  Future<bool> post_recruiting_data(BuildContext context, roomTitle, int partyCount, String destination, int startTime) async {
     try {
-      var dio = await authDio();
+      var dio = await authDio(context);
 
       Map<String, dynamic> data = {
         "roomTitle": roomTitle,
@@ -88,23 +106,26 @@ class UserPost {
 
       final response = await dio.post(url + "/Recruiting", data: data);
 
-      print("로그인 post 요청: $response.body");
+      print("로그인 post 요청: $response");
       if(response.statusCode == 200) {
-        final responseData = json.decode(response.data);
-        print("모집하기 post 요청성공: ");
+        // final responseData = json.decode(response.data);
+        print("모집하기 post 요청성공");
         return true;
       } else {
         return false;
       }
     } catch (error) {
       print("오류 발생: $error");
+      // Navigator.popUntil(context, ModalRoute.withName("memberMain"));
+      // Navigator.pop(context);
+      // handleAction(context, "로그인");
       return false;
     }
   }
   //모집하기 요청 //함수명 다시 확인
   Future<bool> post_recruiting_dataa(String roomTitle, int partyCount, String destination, int startTime) async {
     try {
-      var dio = await authDio();
+      // var dio = await authDio();
       final response = await Http.post(Uri.parse(url + "/Recruiting"), body: {
         "roomTitle": roomTitle,
         "partyCount": partyCount,
@@ -112,9 +133,9 @@ class UserPost {
         "startTime": startTime
       });
 
-      print("로그인 post 요청: $response.body");
+      print("모집하기 post 요청: $response");
       if(response.statusCode == 200) {
-        final responseData = json.decode(response.body);
+        // final responseData = json.decode(response.body);
         print("모집하기 post 요청성공: ");
         return true;//responseData['success'];
       }

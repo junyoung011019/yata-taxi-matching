@@ -160,16 +160,20 @@ class _Recruiting3State extends State<Recruiting3> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
-                    onPressed: () {
-                      user.post_recruiting_dataa(widget.roomTitle, widget.partyCount, widget.destination, widget.startTime);
+                    onPressed: () async {
+                      bool succsess = await user.post_recruiting_data(context, widget.roomTitle, widget.partyCount, widget.destination, widget.startTime);
                       Navigator.popUntil(context, ModalRoute.withName("memberMain"));
-                      handleAction(context, "채팅방",
-                          roomTitle: widget.roomTitle,
-                          partyCount: widget.partyCount,
-                          destination: widget.destination,
-                          startTime: widget.startTime);
+                      if(succsess){
+                        handleAction(context, "채팅방",
+                            roomTitle: widget.roomTitle,
+                            partyCount: widget.partyCount,
+                            destination: widget.destination,
+                            startTime: widget.startTime);
 
-                      showToast("방만들기 성공!");
+                        showToast("방만들기 성공!");
+
+                      }
+                      else showToast("방만들기 실패 !");
                       print('확인 선택');
                     },
                     style: ElevatedButton.styleFrom(

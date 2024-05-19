@@ -28,6 +28,7 @@ class _RecruitmentRoomState extends State<RecruitmentRoom> {
   }
   Widget build(BuildContext context) {
     return Scaffold (
+      backgroundColor: Color(0xFFFBFFCC),
       appBar: AppBar(
         title: Text(
           '모집 방',
@@ -70,7 +71,7 @@ class _RecruitmentRoomState extends State<RecruitmentRoom> {
               ),
             ),
 
-            TextButton(
+            ElevatedButton(
               child: Text("이메일 인증 초기화"),
               onPressed: () { user.univ_init(); },
             ),
@@ -110,16 +111,27 @@ Widget roomContainer(BuildContext context, roomTitle, int partyCount, String des
             mainAxisSize: MainAxisSize.min, // 자식의 최소 높이만 사용
             children: [
               Text(roomTitle),
-              Text('모집 인원: $partyCount'),
-              Text('경로: $destination'),
+              Text('모집 인원: $partyCount  '),
+              Text('    경로: $destination'),
               Text('출발 시간: $startTime분 후'),
-              TextButton(
-                onPressed: ()   { handleAction(context, "채팅방",
-                    roomTitle: roomTitle,
-                    partyCount: partyCount,
-                    destination: destination,
-                    startTime: startTime); },
-                child: Text('참가하기'),
+              ElevatedButton(onPressed: () { handleAction(context, "채팅방",
+                  roomTitle: roomTitle,
+                  partyCount: partyCount,
+                  destination: destination,
+                  startTime: startTime); }, child: Text('참가하기', style:  TextStyle(color: Colors.black),),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 10,
+                  ),
+                  backgroundColor: Colors.white, // 배경색을 흰색으로 변경
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30), // 테두리 둥글게
+                    side: BorderSide(
+                        color: Color(0xFFFAD232),
+                        width: 2), // 테두리 색 및 너비 설정
+                  ),
+                ),
               ),
             ],
           ),

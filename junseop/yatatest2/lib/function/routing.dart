@@ -18,7 +18,9 @@ void handleAction(BuildContext context, String action,
     switch (action) {
       case "로그인":
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => LogIn()));
+            context, MaterialPageRoute(
+            settings: RouteSettings(name: "login"),
+            builder: (context) => LogIn()));
         break;
 
       case "회원가입":

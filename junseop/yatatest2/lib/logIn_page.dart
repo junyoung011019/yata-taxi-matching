@@ -120,7 +120,9 @@ class _LogInState extends State<LogIn> {
                         bool logIn = await user.post_logIn_data(userInfo);
                         if(logIn) {
                           String? accessToken = await storage.read(key: 'ACCESS_TOKEN');
+                          String? refreshToken = await storage.read(key: 'REFRESH_TOKEN');
                           print('ACCESS_TOKEN: $accessToken');
+                          print('REFRESH_TOKEN: $refreshToken');
 
                           user_state.set_loginState(true);
                           Navigator.pop(context);
