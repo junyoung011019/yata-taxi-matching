@@ -32,8 +32,8 @@ const options = {
 const CreateJwtToken = async function(Email){
   const payloadA = { Email: Email, iss:"YATA", roles:"user", keyName:"access" };
   const payloadR = { Email: Email, iss:"YATA", roles:"user", keyName:"refresh" };
-  const accessToken = jwt.sign(payloadA, AccessKey, { expiresIn: '2m' });
-  const refreshToken = jwt.sign(payloadR, RefreshKey, { expiresIn: '5m' }, currentTime);
+  const accessToken = jwt.sign(payloadA, AccessKey, { expiresIn: '1h' });
+  const refreshToken = jwt.sign(payloadR, RefreshKey, { expiresIn: '7h' }, currentTime);
   
   try{
       await client.connect(); // MongoDB 클라이언트 연결
@@ -167,30 +167,30 @@ app.post('/NickCheck', async function (req, res) {
 
 //모집
 app.post('/Recruiting', VerifyJwtAccessToken, async function (req, res) {
-  console.log('hello')
-  res.send('good');
-  // try {
-  //   await client.connect(); // MongoDB 클라이언트 연결
-  //   const database = client.db('YATA');
-  //   const recruitings = database.collection('recruiting');
-  //   var currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
-  //   const RecuitInfo = {
-  //     roomTitle: req.body.roomTitle,
-  //     partyCount: req.body.partyCount,
-  //     destination: req.body.destination,
-  //     startTime: req.body.startTime,
-  //     CreationTime: currentTime
-  //   }
+  try {
+    await client.connect(); // MongoDB 클라이언트 연결
+    const database = client.db('YATA');
+    const UserCollection = database.collection('User');
+    const NickName = (await UserCollection.findOne({ "Email" : req.user.Email })).NickName;
+    console.log(NickName+"의 방만들기 요청");
 
-
-
-
-  // } catch (error) {
-  //   console.error("Error saving data:", error);
-  //   res.status(500).send("Error saving data");
-  // } finally {
-  //   await client.close(); // MongoDB 클라이언트 연결 해제
-  // }
+    const RecruitingsCollection = database.collection('Recruiting');
+    const RecuitInfo = {
+      roomTitle: req.body.roomTitle,
+      partyCount: req.body.partyCount,
+      destination: req.body.destination,
+      startTime: req.body.startTime,
+      CreationTime: currentTime,
+      RoomManager: NickName
+    }
+    await RecruitingsCollection.insertOne(RecuitInfo);
+    res.status(200).send('방 생성 완료');
+  }catch (error) {
+    console.error("Error saving data:", error);
+    res.status(500).send("Error saving data");
+  } finally {
+    await client.close(); // MongoDB 클라이언트 연결 해제
+  }
 })
 
 app.post('/Refresh', async(req,res)=>{
