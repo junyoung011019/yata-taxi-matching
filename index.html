@@ -3,47 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>WebSocket Chat</title>
     <style>
-        input{ width: 500px; height: 30px; }
-        button{ width: 100px; height: 35px;}
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        #chat {
+            width: 500px;
+            max-width: 100%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+            overflow-y: scroll;
+            height: 300px;
+        }
+        #messageInput {
+            width: 100%;
+        }
     </style>
 </head>
 <body>
-    <!-- <form action="/SignUp" method="post">
-        <div>
-            <label for="PassWord">비밀번호</label>
-            <input type="text" name="PassWord">
-        </div>
-        
-        <div>
-            <label for="UserName">이름</label>
-            <input type="text" name="UserName">
-        </div>
-        <div>
-            <label for="Phone">전화번호</label>
-            <input type="number" name="Phone">
-        </div>
-        <div>
-            <label for="AccountNumber">계좌번호</label>
-            <input type="number" name="AccountNumber">
-        </div>
-        <button type="submit">전송</button>
-    </form> -->
+    <h1>WebSocket Chat</h1>
     <div>
-        <p>젠킨스 테스트입니다!</p>
-        <p>젠킨스가 잘되나요? 5월 5일 새벽 12시 35분</p>
-        <p>젠킨스 마무리 테스트 12시 44분</p>
-        <p>찐막 12시 52분</p>
-        <p>찐찐찐찐찐 막 1시 15분</p>
-        <p>찐찐 막 1시 18분</p>
+        <label for="channel">Channel:</label>
+        <input type="text" id="channel" placeholder="Enter channel number">
+        <label for="nickname">Nickname:</label>
+        <input type="text" id="nickname" placeholder="Enter your nickname">
+        <button id="connectBtn">Connect</button>
     </div>
-    <form action="/NickCheck" method="post">
-        <div>
-            <label for="NickName">닉네임</label>
-            <input type="text" name="NickName">
-            <button type="submit">전송</button>
-        </div>
-    </form>
+    <div id="chat"></div>
+    <div>
+        <input type="text" id="messageInput" placeholder="Type a message">
+        <button id="sendBtn">Send</button>
+    </div>
+
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        let socket;
+        let myNickname;
+
+        document.getElementById('connectBtn').addEventListener('click', () => {
+            const channel = document.getElementById('channel').value;
+            myNickname = document.getElementById('nickname').value;
+            if (!channel || !myNickname) {
+                alert('Please enter both channel and nickname.');
+                return;
+            }
+
+            socket = io('https://localhost', {
+                query: {
+                    channel: channel,
+                    nickname: myNickname
+                }
+            });
+
+            socket.on('connect', () => {
+                document.getElementById('chat').innerHTML += '<p>Connected to the server</p>';
+                socket.emit('joinChannel', { channel, nickname: myNickname });
+            });
+
+            socket.on('message', (data) => {
+                const { nickname, message, currentTime } = data;
+                const displayNickname = (nickname === myNickname) ? 'Me' : nickname;
+                document.getElementById('chat').innerHTML += `<p><strong>${displayNickname}:</strong> ${message} <small>(${currentTime})</small></p>`;
+            });
+
+            socket.on('disconnect', () => {
+                document.getElementById('chat').innerHTML += '<p>Disconnected from the server</p>';
+            });
+
+            socket.on('connect_error', (error) => {
+                document.getElementById('chat').innerHTML += `<p>Error: ${error.message}</p>`;
+            });
+        });
+
+        document.getElementById('sendBtn').addEventListener('click', () => {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+            const channel = document.getElementById('channel').value;
+            if (socket && socket.connected) {
+                socket.emit('message', { channel, nickname: myNickname, message });
+                messageInput.value = '';
+            } else {
+                alert('You are not connected to the server.');
+            }
+        });
+    </script>
 </body>
 </html>
