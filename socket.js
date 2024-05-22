@@ -10,10 +10,13 @@ var moment = require('moment');
 require('moment-timezone');
 moment.tz.setDefault("Asia/Seoul");
 var currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
+const { MongoClient } = require('mongodb');
 
 const AccessKey=process.env.JwtAccessSecretKey;
-const RefreshKey=process.env.JwtRefreshSecretKey;
 const app = express();
+
+const mongoUrl = process.env.db_uri;
+const client = new MongoClient(mongoUrl);
 
 
 app.use(express.json());
@@ -34,15 +37,25 @@ const io = new Server(httpsServer,{
     }
 });
 
-// io.engine.on("initial_headers", (headers, req) => {
-//     headers["test"] = "123";
-//     headers["set-cookie"] = "mycookie=456";
-// });
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+        return next(new Error('Authentication error'));
+    }
+    try {
+        const decoded = jwt.verify(token, AccessKey);
+        socket.user = decoded;
+        console.log("jwt인증완료")
+        next();
+    } catch (err) {
+        return next(new Error('Authentication error'));
+    }
+});
 
 io.on('connection', (socket) => {
     console.log('A user connected');
-
-    socket.on('joinChannel', ({ channel, nickname }) => {
+    socket.on('joinChannel', async({ channel }) => {
+        const nickname=socket.user.NickName
         socket.join(channel);
         socket.nickname = nickname;
         console.log(`${nickname} joined channel: ${channel}`);
@@ -50,9 +63,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('message', (data) => {
-        const { channel, nickname, message } = data;
+        const { channel, message } = data;
         console.log('Message received: ' + message);
-        io.to(channel).emit('message', { nickname, message, currentTime });
+        console.log(socket.nickname)
+        io.to(channel).emit('message', { nickname:socket.nickname, message, currentTime });
     });
 
     socket.on('disconnect', () => {

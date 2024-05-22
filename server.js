@@ -29,15 +29,27 @@ const options = {
 };
 
 //jwt 키 생성
-const CreateJwtToken = async function(Email){
-  const payloadA = { Email: Email, iss:"YATA", roles:"user", keyName:"access" };
-  const payloadR = { Email: Email, iss:"YATA", roles:"user", keyName:"refresh" };
-  const accessToken = jwt.sign(payloadA, AccessKey, { expiresIn: '1h' });
-  const refreshToken = jwt.sign(payloadR, RefreshKey, { expiresIn: '7h' }, currentTime);
-  
+const CreateJwtToken = async function(Email){  
+  let accessToken=null;
+  let refreshToken=null;
   try{
       await client.connect(); // MongoDB 클라이언트 연결
       const database = client.db('YATA');
+      const Usercollection = database.collection('User');
+      const result = await Usercollection.findOne({ "Email" : Email });
+      let nickname=null;
+      if (result!==null) {
+        // 닉네임이 있다면 응답
+        nickname=result.NickName;
+      } else {
+        // 닉네임이 없다면 응답
+        throw new Error('No nickname found');
+      }
+
+      const payloadA = { Email: Email, NickName : nickname, iss:"YATA", roles:"user", keyName:"access" };
+      const payloadR = { Email: Email, NickName : nickname, iss:"YATA", roles:"user", keyName:"refresh" };
+      accessToken = jwt.sign(payloadA, AccessKey, { expiresIn: '1h' });
+      refreshToken = jwt.sign(payloadR, RefreshKey, { expiresIn: '7d' }, currentTime);
       const RefreshCollection = database.collection('RefreshToken');
       const hashedToken = bcrypt.hashSync(refreshToken, 10,(err,hash)=>{});
       await RefreshCollection.updateOne(
@@ -51,7 +63,10 @@ const CreateJwtToken = async function(Email){
   }finally{
     await client.close();
   }
-  
+
+  if(accessToken===null||refreshToken===null){
+    console.log('둘중 하나 널임');
+  }
   return({ accessToken, refreshToken });
 };
 
@@ -143,7 +158,7 @@ app.post('/NickCheck', async function (req, res) {
   try {
     await client.connect(); // MongoDB 클라이언트 연결
     const database = client.db('YATA');
-    const collection = database.collection('user');
+    const collection = database.collection('User');
 
     const { NickName }=req.body;
     console.log(NickName+" 중복체크 요청")

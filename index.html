@@ -31,8 +31,8 @@
     <div>
         <label for="channel">Channel:</label>
         <input type="text" id="channel" placeholder="Enter channel number">
-        <label for="nickname">Nickname:</label>
-        <input type="text" id="nickname" placeholder="Enter your nickname">
+        <label for="accessKey">Access Key:</label>
+        <input type="text" id="accessKey" placeholder="Enter your access key">
         <button id="connectBtn">Connect</button>
     </div>
     <div id="chat"></div>
@@ -42,28 +42,40 @@
     </div>
 
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
     <script>
         let socket;
+        let myAccessKey;
         let myNickname;
 
         document.getElementById('connectBtn').addEventListener('click', () => {
             const channel = document.getElementById('channel').value;
-            myNickname = document.getElementById('nickname').value;
-            if (!channel || !myNickname) {
-                alert('Please enter both channel and nickname.');
+            myAccessKey = document.getElementById('accessKey').value;
+            if (!channel || !myAccessKey) {
+                alert('Please enter both channel and access key.');
+                return;
+            }
+
+            try {
+                const decodedToken = jwt_decode(myAccessKey);
+                myNickname = decodedToken.NickName;
+            } catch (error) {
+                alert('Invalid access key.');
                 return;
             }
 
             socket = io('https://localhost', {
                 query: {
-                    channel: channel,
-                    nickname: myNickname
+                    channel: channel
+                },
+                auth: {
+                    token: myAccessKey
                 }
             });
 
             socket.on('connect', () => {
                 document.getElementById('chat').innerHTML += '<p>Connected to the server</p>';
-                socket.emit('joinChannel', { channel, nickname: myNickname });
+                socket.emit('joinChannel', { channel, accessKey: myAccessKey });
             });
 
             socket.on('message', (data) => {
@@ -86,7 +98,7 @@
             const message = messageInput.value;
             const channel = document.getElementById('channel').value;
             if (socket && socket.connected) {
-                socket.emit('message', { channel, nickname: myNickname, message });
+                socket.emit('message', { channel, accessKey: myAccessKey, message });
                 messageInput.value = '';
             } else {
                 alert('You are not connected to the server.');
