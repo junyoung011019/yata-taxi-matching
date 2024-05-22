@@ -48,7 +48,7 @@ const CreateJwtToken = async function(Email){
 
       const payloadA = { Email: Email, NickName : nickname, iss:"YATA", roles:"user", keyName:"access" };
       const payloadR = { Email: Email, NickName : nickname, iss:"YATA", roles:"user", keyName:"refresh" };
-      accessToken = jwt.sign(payloadA, AccessKey, { expiresIn: '1h' });
+      accessToken = jwt.sign(payloadA, AccessKey, { expiresIn: '1d' });
       refreshToken = jwt.sign(payloadR, RefreshKey, { expiresIn: '7d' }, currentTime);
       const RefreshCollection = database.collection('RefreshToken');
       const hashedToken = bcrypt.hashSync(refreshToken, 10,(err,hash)=>{});
@@ -192,11 +192,12 @@ app.post('/Recruiting', VerifyJwtAccessToken, async function (req, res) {
     const RecruitingsCollection = database.collection('Recruiting');
     const RecuitInfo = {
       roomTitle: req.body.roomTitle,
-      partyCount: req.body.partyCount,
       destination: req.body.destination,
       startTime: req.body.startTime,
       CreationTime: currentTime,
-      RoomManager: NickName
+      RoomManager: NickName,
+      MaxCount: req.body.MaxCount,
+      HeadCount:1  
     }
     await RecruitingsCollection.insertOne(RecuitInfo);
     res.status(200).send('방 생성 완료');
@@ -208,6 +209,25 @@ app.post('/Recruiting', VerifyJwtAccessToken, async function (req, res) {
   }
 })
 
+//방 목록 보기
+app.get('/ShowRecruiting', VerifyJwtAccessToken, async function (req, res) {
+  await client.connect(); // MongoDB 클라이언트 연결
+  const database = client.db('YATA');
+  try {
+      const RecruitingsCollection = database.collection('Recruiting');
+      // Recruiting 컬렉션에서 모든 방 정보 조회
+      const recruitments = await RecruitingsCollection.find({}).toArray();
+      
+      // 변환된 모집 정보를 응답으로 전송.
+      res.status(200).json(recruitments);
+      console.log("리스트 반환 성공");
+  } catch (error) {
+      console.error('Error fetching recruitment list:', error);
+      res.status(500).json({ message: 'Server error' });
+  }
+});
+
+//리프레시 토큰
 app.post('/Refresh', async(req,res)=>{
   const {refreshToken} = req.body;
 
