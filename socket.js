@@ -37,6 +37,7 @@ const io = new Server(httpsServer,{
     }
 });
 
+//socketio jwt 토큰 인증
 io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) {
@@ -46,15 +47,18 @@ io.use((socket, next) => {
         const decoded = jwt.verify(token, AccessKey);
         socket.user = decoded;
         console.log("jwt인증완료")
+        //인증 완료시 다음으로 이동
         next();
     } catch (err) {
         return next(new Error('Authentication error'));
     }
 });
 
+//연결
 io.on('connection', (socket) => {
     console.log('A user connected');
     socket.on('joinChannel', (data) => {
+        //입력받은 data에서 채널 추출해서 참가 -> 채널번호는 _id로
         const channel=data.channel;
         socket.join(channel);
         nickname = socket.user.NickName;
