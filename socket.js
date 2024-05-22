@@ -26,7 +26,7 @@ app.use(cors({origin: '*',}));
 const options = {
     cert: fs.readFileSync(path.join(process.env.ssl_key_loc, process.env.key_f)),
     key: fs.readFileSync(path.join(process.env.ssl_key_loc, process.env.key_p))
-  };
+};
 
 const httpsServer=https.createServer(options,app);
 const io = new Server(httpsServer,{
@@ -80,6 +80,34 @@ io.engine.on("connection_error", (err) => {
     console.log(err.code);     // the error code, for example 1
     console.log(err.message);  // the error message, for example "Session ID unknown"
     console.log(err.context);  // some additional error context
+});
+
+app.get('/ShowRecruiting', async (req, res) => {
+    await client.connect(); // MongoDB 클라이언트 연결
+    const database = client.db('YATA');
+    try {
+        const RecruitingsCollection = database.collection('Recruiting');
+        // Recruiting 컬렉션에서 모든 방 정보 조회
+        const recruitments = await RecruitingsCollection.find({}).toArray();
+        
+        // 조회한 모집 정보의 startTime 필드를 정수로 변환합니다.
+        const recruitmentsWithIntStartTime = recruitments.map(recruitment => ({
+            ...recruitment, // 기존 모집 정보의 모든 필드를 복사합니다.
+             //startTime 인트로 강제 변환
+            startTime: parseInt(recruitment.startTime, 10) // startTime 필드를 정수로 변환.
+        }));
+        
+        // 변환된 모집 정보를 응답으로 전송.
+        res.json(recruitmentsWithIntStartTime);
+        console.log("리스트 요청 성공");
+    } catch (error) {
+        console.error('Error fetching recruitment list:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/RoomEnter', async (req, res) => {
+    RoomNo=req.body.roomNo;
 });
 
 httpsServer.listen(443, () => {
