@@ -39,17 +39,11 @@ async function main() {
 
         app.get('/Select_Recruiting', async (req, res) => {
             try {
-                // Recruiting 컬렉션에서 모든 방 정보 조회
                 const recruitments = await recruitingCollection.find({}).toArray();
-                
-                // 조회한 모집 정보의 startTime 필드를 정수로 변환합니다.
                 const recruitmentsWithIntStartTime = recruitments.map(recruitment => ({
-                    ...recruitment, // 기존 모집 정보의 모든 필드를 복사합니다.
-                     // startTime이 어떤건 인트고 어떤건 String이라 아싸리 startTime 인트로 강제 변환
-                    startTime: parseInt(recruitment.startTime, 10) // startTime 필드를 정수로 변환.
+                    ...recruitment,
+                    startTime: parseInt(recruitment.startTime, 10)
                 }));
-                
-                // 변환된 모집 정보를 응답으로 전송.
                 res.json(recruitmentsWithIntStartTime);
                 console.log("리스트 요청 성공");
             } catch (error) {
@@ -57,7 +51,7 @@ async function main() {
                 res.status(500).json({ message: 'Server error' });
             }
         });
-        
+
         app.get('/MessagesInfo/:room', async (req, res) => {
             try {
                 const room = req.params.room;
@@ -72,45 +66,63 @@ async function main() {
         const httpServer = createServer(app);
         const io = new Server(httpServer, {
             cors: {
-                origin: "*", // 필요한 경우 특정 도메인만 허용하도록 수정
+                origin: "*",
             }
         });
-        let ID = ""  // 소캣 id 받을거임
-        /// 소캣 
+
+        const roomCounts = {};  // 방별 클라이언트 수를 추적하는 객체 생성 슛
+        const roomLimits = {};  // 방별 최대 참여 인원 수를 저장하는 객체 생성 슛
+
         io.on("connection", (socket) => {
-            console.log('User connected:', socket.id);
-            
+            console.log('유저 연결 :', socket.id);
 
-            socket.on("join_room", (room) => {
+            socket.on("join_room", (data) => {
+                const { room, maxParticipants } = data;
+                if (roomCounts[room] && roomCounts[room] >= maxParticipants) {
+                    //플러터 코드 中 socket.on ('join_error') 에게 다이렉트 전달
+                    socket.emit('join_error', '방이 가득 찼습니다. 다른 방에 입장 하세요');
+                    return;
+                }
+
                 socket.join(room);
-                console.log(`User joined room: ${room}`);
+                console.log(`유저가 들어온 방 : ${room}`);
+                roomCounts[room] = (roomCounts[room] || 0) + 1; // 1씩 증가 ㄱㄱ
+                roomLimits[room] = maxParticipants;
 
-                //소캣 ID를 클라이언트 (플러터) 에게 넘겨줌
+                //플러터 코드 中 socket.on ('update_participant_count') 에게 다이렉트 전달
+                io.to(room).emit('update_participant_count', roomCounts[room]);
+
+                // 소켓 ID를 클라이언트에게 전달
                 socket.emit('socket_id', socket.id);
-
-
-                io.to(room).emit("receive_message", { message, sender });
-                
             });
-        
+
             socket.on("send_message", async (data) => {
                 try {
                     const { room, message } = data;
-                    const sender = socket.id; // 이거
+                    const sender = socket.id;
                     console.log(`Message received in room ${room}: ${message} from ${sender}`);
-                    console.log (sender);
 
+                    // (socket.)이 아니라 (io.) 인 이유는 전체 방송이라 생각 하면됌
+                    //방에 있는 모든 클라이언트에게 메시지 전송
                     io.to(room).emit("receive_message", { message, sender });
-                    
 
-                    // 데이터베이스에 저장
+                    //데이터베이스에 메시지 저장
                     await messageCollection.insertOne({ room, message, sender, timestamp: new Date() });
-                    console.log(`Message saved to DB in room ${room}: ${message} from ${sender}`);
+                    console.log(`메시지 데베에 저장 완료  ${room}: ${message} from ${sender}`);
                 } catch (error) {
                     console.error('Error handling message:', error);
                 }
             });
-        
+
+            socket.on("disconnecting", () => {
+                for (const room of socket.rooms) {
+                    if (room !== socket.id) {
+                        roomCounts[room] = (roomCounts[room] || 1) - 1; //채팅방에 접속이 끊기면 - 1
+                        io.to(room).emit('update_participant_count', roomCounts[room]);
+                    }
+                }
+            });
+
             socket.on("disconnect", () => {
                 console.log('User disconnected:', socket.id);
             });
