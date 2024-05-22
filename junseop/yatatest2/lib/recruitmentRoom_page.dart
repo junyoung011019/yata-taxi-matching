@@ -14,18 +14,22 @@ class RecruitmentRoom extends StatefulWidget {
 }
 
 class _RecruitmentRoomState extends State<RecruitmentRoom> {
-  UserPost user = new UserPost();
-  List<RoomStruct> roomList = [];
+  UserPost user = UserPost();
+  List<Map<String, dynamic>> roomList = [];
+
   @override
   void initState() {
     super.initState();
-    // initState()에서 사용자의 방 목록을 가져옵니다.
-    roomList = user.post_recruitmentRoomList_data();
-    print(roomList[0].roomTitle);
-    print(roomList[0].partyCount);
-    print(roomList[0].destination);
-    print(roomList[0].startTime);
+    fetchRooms();
   }
+
+  void fetchRooms() async {
+    List<Map<String, dynamic>> fetchedRooms = await user.post_recruitmentRoomList_data(context);
+    setState(() {
+      roomList = fetchedRooms;
+    });
+  }
+
   Widget build(BuildContext context) {
     return Scaffold (
       backgroundColor: Color(0xFFFBFFCC),
@@ -61,11 +65,11 @@ class _RecruitmentRoomState extends State<RecruitmentRoom> {
                   itemCount: roomList.length,
                   itemBuilder: (BuildContext context, int index) {
                     return roomContainer(
-                        context,
-                        roomList[index].roomTitle,
-                        roomList[index].partyCount,
-                        roomList[index].destination,
-                        roomList[index].startTime
+                      context,
+                      roomList[index]['roomTitle'],
+                      roomList[index]['partyCount'],
+                      roomList[index]['destination'],
+                      roomList[index]['startTime'],
                     );
                   }
               ),
@@ -94,50 +98,50 @@ class _RecruitmentRoomState extends State<RecruitmentRoom> {
 
 Widget roomContainer(BuildContext context, roomTitle, int partyCount, String destination, int startTime) {
   return Column(
-      // mainAxisSize: MainAxisAlignment.start,
-      children: [
-        SizedBox(height: 20,),
-        Container(
-          padding: EdgeInsets.all(10), // 텍스트 블록의 패딩 설정
-          width: MediaQuery.of(context).size.width * 0.85, // 화면 너비와 같게 설정
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(
-              color: Color(0xFFFAD232),
-              width: 2,
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min, // 자식의 최소 높이만 사용
-            children: [
-              Text(roomTitle),
-              Text('모집 인원: $partyCount  '),
-              Text('    경로: $destination'),
-              Text('출발 시간: $startTime분 후'),
-              ElevatedButton(onPressed: () { handleAction(context, "채팅방",
-                  roomTitle: roomTitle,
-                  partyCount: partyCount,
-                  destination: destination,
-                  startTime: startTime); }, child: Text('참가하기', style:  TextStyle(color: Colors.black),),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 10,
-                  ),
-                  backgroundColor: Colors.white, // 배경색을 흰색으로 변경
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30), // 테두리 둥글게
-                    side: BorderSide(
-                        color: Color(0xFFFAD232),
-                        width: 2), // 테두리 색 및 너비 설정
-                  ),
-                ),
-              ),
-            ],
+    // mainAxisSize: MainAxisAlignment.start,
+    children: [
+      SizedBox(height: 20,),
+      Container(
+        padding: EdgeInsets.all(10), // 텍스트 블록의 패딩 설정
+        width: MediaQuery.of(context).size.width * 0.85, // 화면 너비와 같게 설정
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(
+            color: Color(0xFFFAD232),
+            width: 2,
           ),
         ),
-      ],
-    );
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // 자식의 최소 높이만 사용
+          children: [
+            Text(roomTitle),
+            Text('모집 인원: $partyCount  '),
+            Text('    경로: $destination'),
+            Text('출발 시간: $startTime분 후'),
+            ElevatedButton(onPressed: () { handleAction(context, "채팅방",
+                roomTitle: roomTitle,
+                partyCount: partyCount,
+                destination: destination,
+                startTime: startTime); }, child: Text('참가하기', style:  TextStyle(color: Colors.black),),
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 10,
+                ),
+                backgroundColor: Colors.white, // 배경색을 흰색으로 변경
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30), // 테두리 둥글게
+                  side: BorderSide(
+                      color: Color(0xFFFAD232),
+                      width: 2), // 테두리 색 및 너비 설정
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
 }
 
 //

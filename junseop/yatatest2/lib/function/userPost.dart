@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as Http;
@@ -108,7 +110,9 @@ class UserPost {
 
       print("모집하기 post 요청: $response");
       if(response.statusCode == 200) {
-        // final responseData = json.decode(response.data);
+        final responseData = response.data;
+        // responseData['roomNum'];
+        print(responseData);
         print("모집하기 post 요청성공");
         return true;
       } else {
@@ -122,37 +126,51 @@ class UserPost {
       return false;
     }
   }
-  //모집하기 요청 //함수명 다시 확인
-  Future<bool> post_recruiting_dataa(String roomTitle, int partyCount, String destination, int startTime) async {
-    try {
-      // var dio = await authDio();
-      final response = await Http.post(Uri.parse(url + "/Recruiting"), body: {
-        "roomTitle": roomTitle,
-        "partyCount": partyCount,
-        "destination":destination,
-        "startTime": startTime
-      });
 
-      print("모집하기 post 요청: $response");
-      if(response.statusCode == 200) {
-        // final responseData = json.decode(response.body);
-        print("모집하기 post 요청성공: ");
-        return true;//responseData['success'];
-      }
-      else return false;
-    } catch (er) {return false;}
-  }
   //모집방 리스트 요청
-  List<RoomStruct> post_recruitmentRoomList_data() {
-    List<RoomStruct> roomList = [];
-    roomList.add(RoomStruct("1번방", 1, "학교", 1));
-    roomList.add(RoomStruct("2번방", 2, "학교", 2));
-    roomList.add(RoomStruct("3번방", 3, "학교", 3));
-    roomList.add(RoomStruct("4번방", 4, "학교", 4));
-    roomList.add(RoomStruct("5번방", 5, "학교", 5));
-    roomList.add(RoomStruct("6번방", 6, "학교", 6));
+  // List<RoomStruct> post_recruitmentRoomList_data() {
+  //
+  //   // List<RoomStruct> roomList = [];
+  //   // roomList.add(RoomStruct("1번방", 1, "학교", 1));
+  //   // roomList.add(RoomStruct("2번방", 2, "학교", 2));
+  //   // roomList.add(RoomStruct("3번방", 3, "학교", 3));
+  //   // roomList.add(RoomStruct("4번방", 4, "학교", 4));
+  //   // roomList.add(RoomStruct("5번방", 5, "학교", 5));
+  //   // roomList.add(RoomStruct("6번방", 6, "학교", 6));
+  //
+  //   return roomList;
+  // }
+  Future <List<Map<String, dynamic>>> post_recruitmentRoomList_data(BuildContext context) async{
+    try {
+      var dio = await authDio(context);
+      final response = await dio.get(url + "/ShowRecruiting");
 
-    return roomList;
+      if (response.statusCode == 200) {
+        print("상태코드 200");
+        List<dynamic> data = response.data;
+        List<Map<String, dynamic>> roomList = data.map((item) {
+          return {
+            "roomNum" : item['_id'],
+            "roomTitle": item['roomTitle'],
+            "destination": item['destination'],
+            "startTime": item['startTime'],
+            "CreationTime": item['CreationTime'],
+            "RoomManager": item['RoomManager'],
+            "MaxCount": item['MaxCount'],
+            "HeadCount": item['HeadCount'],
+
+          };
+        }).toList();
+        return roomList;
+      }
+      else {
+        print("모집방 리스트 가져오기 실패: ${response.statusCode} ${response.data}") ;
+        return [];
+      }
+    }catch(e) {
+      print("모집방 리스트 요청 에러 : $e");
+      return [];
+    }
   }
   //닉네임 중복확인
   Future<bool> nickName_check(String nickName) async {
