@@ -11,6 +11,7 @@ require('moment-timezone');
 moment.tz.setDefault("Asia/Seoul");
 var currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
 const { MongoClient } = require('mongodb');
+const { v4 : uuid4 } = require('uuid');
 
 const AccessKey=process.env.JwtAccessSecretKey;
 const app = express();
@@ -56,10 +57,13 @@ io.use((socket, next) => {
 
 //연결
 io.on('connection', (socket) => {
+    //socket.user에 사용자의 정보가 저장되있을거니까 이걸로 db에 방 정보 저장
+    const key=uuid4();
+    
     console.log('A user connected');
     socket.on('joinChannel', (data) => {
         //입력받은 data에서 채널 추출해서 참가 -> 채널번호는 _id로
-        const channel=data.channel;
+        const channel=socket.handshake.query.channel;
         socket.join(channel);
         nickname = socket.user.NickName;
         console.log(`${nickname} joined channel: ${channel}`);
@@ -87,5 +91,5 @@ io.engine.on("connection_error", (err) => {
 });
 
 httpsServer.listen(443, () => {
-    console.log("HTTPS Server running on port 443")
+    console.log("HTTPS Server running on port 443");
 });

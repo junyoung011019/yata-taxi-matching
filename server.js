@@ -13,6 +13,8 @@ const jwt = require('jsonwebtoken');
 const AccessKey=process.env.JwtAccessSecretKey;
 const RefreshKey=process.env.JwtRefreshSecretKey;
 var currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
+const { v4 : uuid4 } = require('uuid');
+const socketio = require('socket.io');
 
 const app = express();
 app.use(cors({origin: '*',}));
@@ -27,6 +29,15 @@ const options = {
   cert: fs.readFileSync(path.join(process.env.ssl_key_loc, process.env.key_f)),
   key: fs.readFileSync(path.join(process.env.ssl_key_loc, process.env.key_p))
 };
+
+const server = https.createServer(options, app);
+const io = socketio(server,{
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: true
+}
+});
 
 //jwt 키 생성
 const CreateJwtToken = async function(Email){  
@@ -190,17 +201,10 @@ app.post('/Recruiting', VerifyJwtAccessToken, async function (req, res) {
     console.log(NickName+"의 방만들기 요청");
 
     const RecruitingsCollection = database.collection('Recruiting');
-    const RecuitInfo = {
-      roomTitle: req.body.roomTitle,
-      destination: req.body.destination,
-      startTime: req.body.startTime,
-      CreationTime: currentTime,
-      RoomManager: NickName,
-      MaxCount: req.body.MaxCount,
-      HeadCount:1  
-    }
-    await RecruitingsCollection.insertOne(RecuitInfo);
-    res.status(200).send('방 생성 완료');
+    const key=uuid4();
+    req.body._id=key;
+    await RecruitingsCollection.insertOne(req.body);
+    res.status(200).send({msg : '방 생성 완료', roomId : req.body._id, MaxCount : req.body.MaxCount});
   }catch (error) {
     console.error("Error saving data:", error);
     res.status(500).send("Error saving data");
@@ -208,6 +212,93 @@ app.post('/Recruiting', VerifyJwtAccessToken, async function (req, res) {
     await client.close(); // MongoDB 클라이언트 연결 해제
   }
 })
+
+//socketio jwt 토큰 인증
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+      return next(new Error('Authentication error'));
+  }
+  try {
+      const decoded = jwt.verify(token, AccessKey);
+      socket.user = decoded;
+      console.log("jwt인증완료")
+      //인증 완료시 다음으로 이동
+      next();
+  } catch (err) {
+      return next(new Error('Authentication error'));
+  }
+});
+
+const roomCounts = {};
+const roomLimits = {};
+
+//연결 수정 1
+io.on('connection', (socket) => {
+  console.log('A user connected');
+  socket.on('joinChannel', (data) => {
+      //입력받은 data에서 채널 추출해서 참가 -> 채널번호는 _id로
+      const channel=data.channel;
+      socket.join(channel);
+      nickname = socket.user.NickName;
+      console.log(`${nickname} joined channel: ${channel}`);
+      io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has joined the channel`,currentTime: `${currentTime}` });
+  });
+
+  socket.on('message', (data) => {
+      const { channel, message } = data;
+      console.log('Message received: ' + message);
+      console.log(socket.nickname)
+      io.to(channel).emit('message', { nickname:socket.nickname, message, currentTime });
+  });
+
+  socket.on('disconnect', () => {
+      console.log('A user disconnected');
+      // io.socketsLeave("room1");
+  });
+});
+
+
+//연결 수정 2
+// io.on('connection', (socket) => {
+//   //socket.user에 사용자의 정보가 저장되있을거니까 이걸로 db에 방 정보 저장
+//   console.log('A user connected');
+//   socket.on('joinChannel', (data) => {
+//       //입력받은 data에서 채널 추출해서 참가 -> 채널번호는 _id로
+//       const channel=data._id;
+//       socket.join(channel);
+
+//       if (roomCounts[channel]>= data.MaxCount) {
+//         //플러터 코드 中 socket.on ('join_error') 에게 다이렉트 전달
+//         socket.emit('join_error', '방이 가득 찼습니다. 다른 방에 입장 하세요');
+//         return;
+//     }
+//       nickname = socket.user.NickName;
+//       console.log(`${nickname} joined channel: ${channel}`);
+//       io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has joined the channel`,currentTime: `${currentTime}` });
+//       roomCounts[channel] +=  1; // 방의 인원
+//       console.log(roomCounts[channel]);
+//   });
+
+//   socket.on('message', (data) => {
+//       const { channel, message } = data;
+//       console.log('Message received: ' + message);
+//       console.log(socket.nickname)
+//       io.to(channel).emit('message', { nickname:socket.nickname, message, currentTime });
+//   });
+
+//   socket.on('disconnect', () => {
+//       console.log('A user disconnected');
+//       // io.socketsLeave("room1");
+//   });
+// });
+
+io.engine.on("connection_error", (err) => {
+  console.log(err.req);      // the request object
+  console.log(err.code);     // the error code, for example 1
+  console.log(err.message);  // the error message, for example "Session ID unknown"
+  console.log(err.context);  // some additional error context
+});
 
 //방 목록 보기
 app.get('/ShowRecruiting', VerifyJwtAccessToken, async function (req, res) {
@@ -266,7 +357,6 @@ app.post('/Refresh', async(req,res)=>{
   }
 });
 
-
-https.createServer(options,app).listen(443, () => {
+server.listen(443, () => {
   console.log("HTTPS Server running on port 443")
 });
