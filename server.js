@@ -210,7 +210,7 @@ app.post('/Recruiting', VerifyJwtAccessToken, async function (req, res) {
     req.body.RoomManager=NickName;
     
     await RecruitingsCollection.insertOne(req.body);
-    res.status(200).send({msg : '방 생성 완료', roomId : req.body._id, MaxCount : req.body.MaxCount});
+    res.status(200).send({msg : '방 생성 완료', roomId : req.body._id});
   }catch (error) {
     console.error("Error saving data:", error);
     res.status(500).send("Error saving data");
@@ -252,21 +252,21 @@ io.on('connection', (socket) => {
       currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
       channel=data.channel;
       socket.join(channel);
-      const nickname = socket.user.NickName;
+      nickname = socket.user.NickName;
       console.log(`${nickname} joined channel: ${channel}`);
       io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has joined the channel`,currentTime: `${currentTime}` });
   });
 
   socket.on('message', (data) => {
-    currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
+      currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
       const { channel, message } = data;
-      console.log('Message received: ' + message);
-      console.log(nickname)
-      io.to(channel).emit('message', { nickname:socket.nickname, message, currentTime });
+      console.log(nickname +'Message send: ' + message);
+      io.to(channel).emit('message', { nickname, message, currentTime });
   });
 
   socket.on('disconnect', () => {
       console.log('A user disconnected');
+      io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has lefted the channel`,currentTime: `${currentTime}` });
       socket.leave(channel);
   });
 });

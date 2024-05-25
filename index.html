@@ -38,7 +38,8 @@
             event.preventDefault();
             const token = document.getElementById('token').value;
             const channel = document.getElementById('channel').value;
-
+            const nickname = prompt('Enter your nickname');
+            //www.jkla.shop
             socket = io('https://www.jkla.shop', {
                 auth: {
                     token: token
@@ -53,13 +54,17 @@
             socket.on('connect', () => {
                 console.log('Connected to server');
                 chatDiv.style.display = 'block';
-                socket.emit('joinChannel', { channel: channel });
+                socket.emit('joinChannel', { channel: channel, nickname: nickname });
             });
 
             socket.on('message', (data) => {
                 const messageElement = document.createElement('div');
                 messageElement.textContent = `[${data.currentTime}] ${data.nickname}: ${data.message}`;
                 messagesDiv.appendChild(messageElement);
+            });
+
+            socket.on('roomCountUpdate', (count) => {
+                console.log(`Room ${channel}: ${count} users`);
             });
         });
 
