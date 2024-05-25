@@ -244,11 +244,15 @@ io.on('connection', (socket) => {
   console.log('A user connected');
   let channel;
   let nickname;
+  let channels = {};
+  function addChannel(channel, MaxCount) {
+    channels[channel] = { MaxCount: MaxCount, clients: 1 };
+  }
 
   //최대인원, jwt, id 
   socket.on('createion',(data)=>{
     const { MaxCount, channel } = data;
-    channels[channel]={ MaxCount: MaxCount, clients: 1 };
+    addChannel(channel, MaxCount);
     currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
     socket.emit('channelCreated', { message: `Channel ${channel} created : `+ currentTime });
     console.log("현재 인원 : " +channels[channel].clients);
@@ -269,7 +273,7 @@ io.on('connection', (socket) => {
       return;
     }
     //채널의 최대인원 확인
-    if (channel.clients.length >= channel.maxCount) {
+    if (channel.clients >= channel.maxCount) {
         socket.emit('error', { message: 'Channel is full' });
         return;
     }
