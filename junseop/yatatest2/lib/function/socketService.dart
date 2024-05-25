@@ -4,7 +4,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 class SocketService {
   late IO.Socket socket;
   final url = dotenv.get("URL");
-  SocketService(String accessToken, String roomId) {
+  SocketService(String accessToken, String roomId, bool creation, int MaxCount) {
     print("생성자 호출");
     print("소켓 accessToken : $accessToken");
     print("소켓 roomId : $roomId");
@@ -19,14 +19,20 @@ class SocketService {
             // .setQuery({'channel': roomId})
             .build());
 
-
     // 소켓 연결 시도
     socket.connect();
 
     // 연결 이벤트 핸들러
     socket.on('connect', (_) {
       print('Connected to the server');
-      socket.emit('joinChannel', {'channel': roomId});
+      if(creation) {
+        print("creation으로 보냈음");
+        socket.emit('creation', {'channel': roomId, 'MaxCount': MaxCount});
+      } //모집하기로 들어온 사람
+      else {
+        print("joinChannel로 보냈음");
+        socket.emit('joinChannel', {'channel': roomId});
+      } //참여하기로 들어온 사람
       // 연결이 성공하면 추가 작업을 여기에 추가
     });
 

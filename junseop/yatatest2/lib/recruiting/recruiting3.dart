@@ -182,7 +182,8 @@ class _Recruiting3State extends State<Recruiting3> {
                             destination: widget.destination,
                             startTime: widget.startTime,
                             accessToken: accessToken,
-                            roomId: roomId
+                            roomId: roomId,
+                            creation: true
                         );
 
                         showToast("방만들기 성공!");
