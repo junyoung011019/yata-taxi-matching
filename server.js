@@ -240,9 +240,10 @@ const roomLimits = {};
 //연결 수정 1
 io.on('connection', (socket) => {
   console.log('A user connected');
+  let channel;
   socket.on('joinChannel', (data) => {
       //입력받은 data에서 채널 추출해서 참가 -> 채널번호는 _id로
-      const channel=data.channel;
+      channel=data.channel;
       socket.join(channel);
       nickname = socket.user.NickName;
       console.log(`${nickname} joined channel: ${channel}`);
@@ -258,7 +259,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
       console.log('A user disconnected');
-      // io.socketsLeave("room1");
+      socket.leave(channel);
   });
 });
 
