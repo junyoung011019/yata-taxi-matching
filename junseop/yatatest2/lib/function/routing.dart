@@ -15,7 +15,7 @@ import '../yataMain/yataMain.dart';
 
 
 void handleAction(BuildContext context, String action,
-    {String roomTitle = "",int partyCount = 4,  String destination = "school", int startTime = 10}) {
+    {String roomTitle = "",int MaxCount = 2, int HeadCount = 1, String destination = "남서울대학교", int startTime = 5, String accessToken = "",  String roomId = ""}) {
   if (!user_state.loginState) {
     switch (action) {
       case "로그인":
@@ -106,14 +106,14 @@ void handleAction(BuildContext context, String action,
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => Recruiting2(
               roomTitle: roomTitle,
-              partyCount: partyCount,
+              MaxCount: MaxCount,
             )));
         break;
       case "모집하기3":
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => Recruiting3(
               roomTitle: roomTitle,
-              partyCount: partyCount,
+              MaxCount: MaxCount,
               destination: destination,
               startTime: startTime,
             )));
@@ -122,9 +122,12 @@ void handleAction(BuildContext context, String action,
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => ChatRoom(
               roomTitle: roomTitle,
-              partyCount: partyCount,
+              MaxCount: MaxCount,
+              HeadCount: HeadCount,
               destination: destination,
               startTime: startTime,
+              accessToken: accessToken,
+              roomId: roomId,
             )));
         break;
 

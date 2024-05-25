@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:yatatest2/function/routing.dart';
 import 'package:yatatest2/function/toastMessage.dart';
 import '../function/userPost.dart';
 class Recruiting3 extends StatefulWidget {
   final String roomTitle;
-  final int partyCount;
+  final int MaxCount;
   final String destination;
   final int startTime;
   const Recruiting3({super.key,
-    required this.roomTitle, required this.partyCount, required this.destination, required this.startTime});
+    required this.roomTitle, required this.MaxCount, required this.destination, required this.startTime});
 
   @override
   State<Recruiting3> createState() => _Recruiting3State();
 }
 
 class _Recruiting3State extends State<Recruiting3> {
+  final storage = new FlutterSecureStorage();
   UserPost user = new UserPost();
   @override
   Widget build(BuildContext context) {
@@ -95,7 +97,7 @@ class _Recruiting3State extends State<Recruiting3> {
                   horizontal: MediaQuery.of(context).size.width * 0.33,
                 ),
                 child: Text(
-                  widget.partyCount.toString(), // 텍스트 내용
+                  widget.MaxCount.toString(), // 텍스트 내용
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.black, // 검정색 글자
@@ -161,14 +163,27 @@ class _Recruiting3State extends State<Recruiting3> {
                 children: [
                   ElevatedButton(
                     onPressed: () async {
-                      bool succsess = await user.post_recruiting_data(context, widget.roomTitle, widget.partyCount, widget.destination, widget.startTime);
-                      Navigator.popUntil(context, ModalRoute.withName("memberMain"));
-                      if(succsess){
+
+                      String roomId = await user.post_recruiting_data(context,
+                          widget.roomTitle,
+                          widget.MaxCount,
+                          widget.destination,
+                          widget.startTime
+                      );
+
+                      if(roomId != ""){
+                        String? accessToken = await storage.read(key: 'ACCESS_TOKEN');
+                        if(accessToken == null) accessToken = '';
+
+                        Navigator.popUntil(context, ModalRoute.withName("memberMain"));
                         handleAction(context, "채팅방",
                             roomTitle: widget.roomTitle,
-                            partyCount: widget.partyCount,
+                            MaxCount: widget.MaxCount,
                             destination: widget.destination,
-                            startTime: widget.startTime);
+                            startTime: widget.startTime,
+                            accessToken: accessToken,
+                            roomId: roomId
+                        );
 
                         showToast("방만들기 성공!");
 

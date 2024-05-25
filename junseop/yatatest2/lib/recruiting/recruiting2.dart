@@ -3,10 +3,10 @@ import 'package:yatatest2/function/routing.dart';
 
 class Recruiting2 extends StatefulWidget {
   final String roomTitle;
-  final int partyCount;
+  final int MaxCount;
 
   const Recruiting2(
-      {super.key, required this.roomTitle, required this.partyCount});
+      {super.key, required this.roomTitle, required this.MaxCount});
 
   @override
   State<Recruiting2> createState() => _Recruiting2State();
@@ -16,7 +16,7 @@ class _Recruiting2State extends State<Recruiting2> {
   int selectedRouteButtonIndex = 0; // 경로 버튼의 선택 상태를 추적
   int selectedTimeButtonIndex = 0;
   String destination = "학교";
-  int startTime = 10;
+  int startTime = 5;
 
   @override
   Widget build(BuildContext context) {
@@ -349,7 +349,7 @@ class _Recruiting2State extends State<Recruiting2> {
                           context,
                           "모집하기3",
                           roomTitle: widget.roomTitle,
-                          partyCount: widget.partyCount,
+                          MaxCount: widget.MaxCount,
                           destination: destination,
                           startTime: startTime,
                         );

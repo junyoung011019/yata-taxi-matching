@@ -1,6 +1,6 @@
-import 'dart:html';
-
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as Http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -95,13 +95,13 @@ class UserPost {
     } catch (er) {return false;}
   }
   //모집하기 요청 Dio로 해보기
-  Future<bool> post_recruiting_data(BuildContext context, roomTitle, int partyCount, String destination, int startTime) async {
+  Future<String> post_recruiting_data(BuildContext context, roomTitle, int MaxCount, String destination, int startTime) async {
     try {
       var dio = await authDio(context);
 
       Map<String, dynamic> data = {
         "roomTitle": roomTitle,
-        "partyCount": partyCount,
+        "MaxCount": MaxCount,
         "destination": destination,
         "startTime": startTime
       };
@@ -112,18 +112,18 @@ class UserPost {
       if(response.statusCode == 200) {
         final responseData = response.data;
         // responseData['roomNum'];
-        print(responseData);
+        print(responseData['roomId']);
         print("모집하기 post 요청성공");
-        return true;
+        return responseData['roomId'];
       } else {
-        return false;
+        return "";
       }
     } catch (error) {
       print("오류 발생: $error");
       // Navigator.popUntil(context, ModalRoute.withName("memberMain"));
       // Navigator.pop(context);
       // handleAction(context, "로그인");
-      return false;
+      return "";
     }
   }
 
@@ -144,13 +144,13 @@ class UserPost {
     try {
       var dio = await authDio(context);
       final response = await dio.get(url + "/ShowRecruiting");
-
+      print("방 리스트 상태코드 : ${response.statusCode}");
       if (response.statusCode == 200) {
         print("상태코드 200");
         List<dynamic> data = response.data;
         List<Map<String, dynamic>> roomList = data.map((item) {
           return {
-            "roomNum" : item['_id'],
+            "roomId": item['_id'],
             "roomTitle": item['roomTitle'],
             "destination": item['destination'],
             "startTime": item['startTime'],
@@ -158,17 +158,35 @@ class UserPost {
             "RoomManager": item['RoomManager'],
             "MaxCount": item['MaxCount'],
             "HeadCount": item['HeadCount'],
-
           };
         }).toList();
         return roomList;
-      }
-      else {
-        print("모집방 리스트 가져오기 실패: ${response.statusCode} ${response.data}") ;
+      } else {
+        print("모집방 리스트 가져오기 실패: ${response.statusCode} ${response.data}");
         return [];
       }
     }catch(e) {
-      print("모집방 리스트 요청 에러 : $e");
+      if (e is DioException) {
+        if (e.response?.statusCode == 404) {
+          print("404 오류: 요청한 리소스를 찾을 수 없습니다. ${e.response?.data}");
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("요청한 리소스를 찾을 수 없습니다. URL을 확인하세요."),
+            duration: Duration(seconds: 3),
+          ));
+        } else {
+          print("Dio 오류: ${e.message}");
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("요청 중 오류가 발생했습니다: ${e.message}"),
+            duration: Duration(seconds: 3),
+          ));
+        }
+      } else {
+        print("기타 오류: $e");
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("알 수 없는 오류가 발생했습니다."),
+          duration: Duration(seconds: 3),
+        ));
+      }
       return [];
     }
   }

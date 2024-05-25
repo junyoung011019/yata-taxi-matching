@@ -12,7 +12,7 @@ class Recruiting1 extends StatefulWidget {
 class _Recruiting1State extends State<Recruiting1> {
   int selectedButtonIndex = 0; // 선택된 버튼의 인덱스를 추적
   final _textController = TextEditingController();
-  int party_count = 2;
+  int MaxCount = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +114,7 @@ class _Recruiting1State extends State<Recruiting1> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          party_count = 2;
+                          MaxCount = 2;
                           setState(() {
                             selectedButtonIndex = 0; // 2명 버튼이 선택됨
                           });
@@ -142,7 +142,7 @@ class _Recruiting1State extends State<Recruiting1> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          party_count = 3;
+                          MaxCount = 3;
                           setState(() {
                             selectedButtonIndex = 1; // 3명 버튼이 선택됨
                           });
@@ -170,7 +170,7 @@ class _Recruiting1State extends State<Recruiting1> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          party_count = 4;
+                          MaxCount = 4;
                           setState(() {
                             selectedButtonIndex = 2; // 4명 버튼이 선택됨
                           });
@@ -208,9 +208,7 @@ class _Recruiting1State extends State<Recruiting1> {
                           if(_textController.text.length < 1 || _textController.text.trim().isEmpty)
                             showSnackBar(context, "방제목을 올바르게 입력해주세요");
                           else {
-                            print(_textController.text);
-                            print(party_count);
-                            handleAction(context, "모집하기2", roomTitle: _textController.text, partyCount: party_count);
+                            handleAction(context, "모집하기2", roomTitle: _textController.text, MaxCount: MaxCount);
                           }
                         },
                         style: ElevatedButton.styleFrom(

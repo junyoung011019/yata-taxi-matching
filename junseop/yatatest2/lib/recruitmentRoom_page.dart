@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:yatatest2/function/routing.dart';
 import 'package:yatatest2/struct/recruitRoomStruct.dart';
 
@@ -27,6 +28,8 @@ class _RecruitmentRoomState extends State<RecruitmentRoom> {
     List<Map<String, dynamic>> fetchedRooms = await user.post_recruitmentRoomList_data(context);
     setState(() {
       roomList = fetchedRooms;
+      print(roomList[0]['roomTitle']);
+      print(roomList[0]['roomId']);
     });
   }
 
@@ -64,12 +67,18 @@ class _RecruitmentRoomState extends State<RecruitmentRoom> {
               child: ListView.builder (
                   itemCount: roomList.length,
                   itemBuilder: (BuildContext context, int index) {
+                    if (roomList.length == 0 ) {
+                      Text("현재 생성된 방이 없습니다!");
+                    }
+                    else
                     return roomContainer(
                       context,
                       roomList[index]['roomTitle'],
-                      roomList[index]['partyCount'],
+                      roomList[index]['MaxCount'],
+                      roomList[index]['HeadCount'],
                       roomList[index]['destination'],
                       roomList[index]['startTime'],
+                      roomList[index]['roomId'],
                     );
                   }
               ),
@@ -96,7 +105,7 @@ class _RecruitmentRoomState extends State<RecruitmentRoom> {
 
 }
 
-Widget roomContainer(BuildContext context, roomTitle, int partyCount, String destination, int startTime) {
+Widget roomContainer(BuildContext context, roomTitle, int MaxCount, int HeadCount, String destination, int startTime, String roomId) {
   return Column(
     // mainAxisSize: MainAxisAlignment.start,
     children: [
@@ -115,13 +124,21 @@ Widget roomContainer(BuildContext context, roomTitle, int partyCount, String des
           mainAxisSize: MainAxisSize.min, // 자식의 최소 높이만 사용
           children: [
             Text(roomTitle),
-            Text('모집 인원: $partyCount  '),
+            Text('모집 인원: $HeadCount/$MaxCount  '),
             Text('    경로: $destination'),
             Text('출발 시간: $startTime분 후'),
-            ElevatedButton(onPressed: () { handleAction(context, "채팅방",
+            ElevatedButton(onPressed: () async {
+              final storage = new FlutterSecureStorage();
+              String? accessToken = await storage.read(key: 'ACCESS_TOKEN');
+              if(accessToken == null) accessToken = '';
+
+              handleAction(context, "채팅방",
                 roomTitle: roomTitle,
-                partyCount: partyCount,
+                MaxCount: MaxCount,
+                HeadCount: HeadCount,
                 destination: destination,
+                roomId: roomId,
+                accessToken: accessToken,
                 startTime: startTime); }, child: Text('참가하기', style:  TextStyle(color: Colors.black),),
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(
