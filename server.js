@@ -12,7 +12,7 @@ moment.tz.setDefault("Asia/Seoul");
 const jwt = require('jsonwebtoken');
 const AccessKey=process.env.JwtAccessSecretKey;
 const RefreshKey=process.env.JwtRefreshSecretKey;
-var currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
+let currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
 const { v4 : uuid4 } = require('uuid');
 const socketio = require('socket.io');
 
@@ -60,6 +60,7 @@ const CreateJwtToken = async function(Email){
       const payloadA = { Email: Email, NickName : nickname, iss:"YATA", roles:"user", keyName:"access" };
       const payloadR = { Email: Email, NickName : nickname, iss:"YATA", roles:"user", keyName:"refresh" };
       accessToken = jwt.sign(payloadA, AccessKey, { expiresIn: '1d' });
+      currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
       refreshToken = jwt.sign(payloadR, RefreshKey, { expiresIn: '7d' }, currentTime);
       const RefreshCollection = database.collection('RefreshToken');
       const hashedToken = bcrypt.hashSync(refreshToken, 10,(err,hash)=>{});
@@ -194,6 +195,7 @@ app.post('/NickCheck', async function (req, res) {
 //모집
 app.post('/Recruiting', VerifyJwtAccessToken, async function (req, res) {
   try {
+    currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
     await client.connect(); // MongoDB 클라이언트 연결
     const database = client.db('YATA');
     const UserCollection = database.collection('User');
@@ -237,23 +239,29 @@ io.use((socket, next) => {
 const roomCounts = {};
 const roomLimits = {};
 
-//연결 수정 1
+//소켓 연결
 io.on('connection', (socket) => {
   console.log('A user connected');
   let channel;
+  let nickname;
   socket.on('joinChannel', (data) => {
+      if(channel){
+        socket.leave(channel);
+      }
       //입력받은 data에서 채널 추출해서 참가 -> 채널번호는 _id로
+      currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
       channel=data.channel;
       socket.join(channel);
-      nickname = socket.user.NickName;
+      const nickname = socket.user.NickName;
       console.log(`${nickname} joined channel: ${channel}`);
       io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has joined the channel`,currentTime: `${currentTime}` });
   });
 
   socket.on('message', (data) => {
+    currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
       const { channel, message } = data;
       console.log('Message received: ' + message);
-      console.log(socket.nickname)
+      console.log(nickname)
       io.to(channel).emit('message', { nickname:socket.nickname, message, currentTime });
   });
 
@@ -263,41 +271,7 @@ io.on('connection', (socket) => {
   });
 });
 
-
-//연결 수정 2
-// io.on('connection', (socket) => {
-//   //socket.user에 사용자의 정보가 저장되있을거니까 이걸로 db에 방 정보 저장
-//   console.log('A user connected');
-//   socket.on('joinChannel', (data) => {
-//       //입력받은 data에서 채널 추출해서 참가 -> 채널번호는 _id로
-//       const channel=data._id;
-//       socket.join(channel);
-
-//       if (roomCounts[channel]>= data.MaxCount) {
-//         //플러터 코드 中 socket.on ('join_error') 에게 다이렉트 전달
-//         socket.emit('join_error', '방이 가득 찼습니다. 다른 방에 입장 하세요');
-//         return;
-//     }
-//       nickname = socket.user.NickName;
-//       console.log(`${nickname} joined channel: ${channel}`);
-//       io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has joined the channel`,currentTime: `${currentTime}` });
-//       roomCounts[channel] +=  1; // 방의 인원
-//       console.log(roomCounts[channel]);
-//   });
-
-//   socket.on('message', (data) => {
-//       const { channel, message } = data;
-//       console.log('Message received: ' + message);
-//       console.log(socket.nickname)
-//       io.to(channel).emit('message', { nickname:socket.nickname, message, currentTime });
-//   });
-
-//   socket.on('disconnect', () => {
-//       console.log('A user disconnected');
-//       // io.socketsLeave("room1");
-//   });
-// });
-
+//소켓 에러 처리
 io.engine.on("connection_error", (err) => {
   console.log(err.req);      // the request object
   console.log(err.code);     // the error code, for example 1

@@ -2,106 +2,82 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebSocket Chat</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-        #chat {
-            width: 500px;
-            max-width: 100%;
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-top: 20px;
-            overflow-y: scroll;
-            height: 300px;
-        }
-        #messageInput {
-            width: 100%;
-        }
-    </style>
+    <title>Socket.IO JWT Authentication</title>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
 </head>
 <body>
-    <h1>WebSocket Chat</h1>
-    <div>
+    <h1>Socket.IO Chat with JWT Authentication</h1>
+    <form id="authForm">
+        <label for="token">JWT Token:</label>
+        <input type="text" id="token" required>
+        <br>
         <label for="channel">Channel:</label>
-        <input type="text" id="channel" placeholder="Enter channel number">
-        <label for="accessKey">Access Key:</label>
-        <input type="text" id="accessKey" placeholder="Enter your access key">
-        <button id="connectBtn">Connect</button>
+        <input type="text" id="channel" required>
+        <br>
+        <button type="submit">Join Channel</button>
+    </form>
+    <div id="chat" style="display:none;">
+        <h2>Chat</h2>
+        <div id="messages"></div>
+        <form id="messageForm">
+            <input type="text" id="message" required>
+            <button type="submit">Send</button>
+        </form>
+        <button id="disconnectButton">Disconnect</button>
     </div>
-    <div id="chat"></div>
-    <div>
-        <input type="text" id="messageInput" placeholder="Type a message">
-        <button id="sendBtn">Send</button>
-    </div>
-
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
     <script>
+        const authForm = document.getElementById('authForm');
+        const messageForm = document.getElementById('messageForm');
+        const messagesDiv = document.getElementById('messages');
+        const chatDiv = document.getElementById('chat');
+        const disconnectButton = document.getElementById('disconnectButton');
+
         let socket;
-        let myAccessKey;
-        let myNickname;
 
-        document.getElementById('connectBtn').addEventListener('click', () => {
+        authForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const token = document.getElementById('token').value;
             const channel = document.getElementById('channel').value;
-            myAccessKey = document.getElementById('accessKey').value;
-            if (!channel || !myAccessKey) {
-                alert('Please enter both channel and access key.');
-                return;
-            }
-
-            try {
-                const decodedToken = jwt_decode(myAccessKey);
-                myNickname = decodedToken.NickName;
-            } catch (error) {
-                alert('Invalid access key.');
-                return;
-            }
 
             socket = io('https://www.jkla.shop', {
-                query: {
-                    channel: channel
-                },
                 auth: {
-                    token: myAccessKey
+                    token: token
                 }
             });
 
+            socket.on('connect_error', (err) => {
+                console.log('Connection Error:', err.message);
+                alert('Authentication error');
+            });
+
             socket.on('connect', () => {
-                document.getElementById('chat').innerHTML += '<p>Connected to the server</p>';
-                socket.emit('joinChannel', { channel, accessKey: myAccessKey });
+                console.log('Connected to server');
+                chatDiv.style.display = 'block';
+                socket.emit('joinChannel', { channel: channel });
             });
 
             socket.on('message', (data) => {
-                const { nickname, message, currentTime } = data;
-                const displayNickname = (nickname === myNickname) ? 'Me' : nickname;
-                document.getElementById('chat').innerHTML += `<p><strong>${displayNickname}:</strong> ${message} <small>(${currentTime})</small></p>`;
-            });
-
-            socket.on('disconnect', () => {
-                document.getElementById('chat').innerHTML += '<p>Disconnected from the server</p>';
-            });
-
-            socket.on('connect_error', (error) => {
-                document.getElementById('chat').innerHTML += `<p>Error: ${error.message}</p>`;
+                const messageElement = document.createElement('div');
+                messageElement.textContent = `[${data.currentTime}] ${data.nickname}: ${data.message}`;
+                messagesDiv.appendChild(messageElement);
             });
         });
 
-        document.getElementById('sendBtn').addEventListener('click', () => {
-            const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value;
+        messageForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const message = document.getElementById('message').value;
             const channel = document.getElementById('channel').value;
-            if (socket && socket.connected) {
-                socket.emit('message', { channel, accessKey: myAccessKey, message });
-                messageInput.value = '';
-            } else {
-                alert('You are not connected to the server.');
+
+            socket.emit('message', { channel: channel, message: message });
+            document.getElementById('message').value = '';
+        });
+
+        disconnectButton.addEventListener('click', function() {
+            if (socket) {
+                socket.disconnect();
+                chatDiv.style.display = 'none';
+                messagesDiv.innerHTML = '';
+                console.log('Disconnected from server');
             }
         });
     </script>
