@@ -203,6 +203,10 @@ app.post('/Recruiting', VerifyJwtAccessToken, async function (req, res) {
     const RecruitingsCollection = database.collection('Recruiting');
     const key=uuid4();
     req.body._id=key;
+    req.body.HeadCount=1;
+    req.body.CreationTime=currentTime;
+    req.body.RoomManager=NickName;
+    
     await RecruitingsCollection.insertOne(req.body);
     res.status(200).send({msg : '방 생성 완료', roomId : req.body._id, MaxCount : req.body.MaxCount});
   }catch (error) {
