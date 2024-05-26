@@ -260,6 +260,7 @@ io.on('connection', (socket) => {
     socket.emit('channelCreated', { message: `Channel ${channel} created : `+ currentTime });
     console.log("현재 인원 : " +channels[channel].clients);
     console.log("값 확인 : " + JSON.stringify(channels[channel]));
+    socket.join(channel);
   });
 
   //참석할때 필요한 정보 jwt, 채널 아이디
