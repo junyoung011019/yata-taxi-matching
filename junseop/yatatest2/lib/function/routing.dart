@@ -15,7 +15,14 @@ import '../yataMain/yataMain.dart';
 
 
 void handleAction(BuildContext context, String action,
-    {String roomTitle = "",int MaxCount = 2, int HeadCount = 1, String destination = "남서울대학교", int startTime = 5, String accessToken = "",  String roomId = ""}) {
+    {String roomTitle = "",
+      int MaxCount = 2,
+      int HeadCount = 1,
+      String destination = "남서울대학교",
+      int startTime = 5, String accessToken = "",
+      String roomId = "",
+      bool creation = true,
+    }) {
   if (!user_state.loginState) {
     switch (action) {
       case "로그인":
@@ -128,6 +135,7 @@ void handleAction(BuildContext context, String action,
               startTime: startTime,
               accessToken: accessToken,
               roomId: roomId,
+              creation: creation,
             )));
         break;
 

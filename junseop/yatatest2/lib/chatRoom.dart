@@ -11,15 +11,17 @@ class ChatRoom extends StatefulWidget {
   final int startTime;
   final String accessToken;
   final String roomId;
-  // final String roomId;
-  const ChatRoom({super.key,
+  final bool creation;
+  const ChatRoom({
+    super.key,
     required this.roomTitle,
     required this.MaxCount,
     required this.HeadCount,
     required this.destination,
     required this.startTime,
     required this.accessToken,
-    required this.roomId
+    required this.roomId,
+    required this.creation,
   });
 
   @override
@@ -28,6 +30,7 @@ class ChatRoom extends StatefulWidget {
 
 class _ChatRoomState extends State<ChatRoom> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   late Map<String, dynamic> decodedToken;
   late String myNick;
@@ -40,12 +43,13 @@ class _ChatRoomState extends State<ChatRoom> {
     decodedToken = JwtDecoder.decode(widget.accessToken);
     myNick = decodedToken["NickName"];
     print("내 닉네임: $myNick");
-    socket = SocketService(widget.accessToken, widget.roomId); //widget.roomId
+    socket = SocketService(widget.accessToken, widget.roomId, widget.creation, widget.MaxCount);
     socket.onMessage((data) {
       if (mounted) {
         setState(() {
           messages.add(data);
         });
+        _scrollToBottom();
       }
     });
   }
@@ -57,10 +61,23 @@ class _ChatRoomState extends State<ChatRoom> {
     }
   }
 
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   @override
   void dispose() {
     socket.disconnect();
     _controller.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -91,6 +108,7 @@ class _ChatRoomState extends State<ChatRoom> {
           Text("예상 출발 시간 : ${widget.startTime}분 후"),
           Expanded(
             child: ListView.builder(
+              controller: _scrollController,
               itemCount: messages.length,
               itemBuilder: (context, index) {
                 return buildMessage(messages[index]);
@@ -125,27 +143,41 @@ class _ChatRoomState extends State<ChatRoom> {
     bool isMe = message['nickname'] == myNick;
     bool isSystem = message['nickname'] == "System";
     return Align(
-      alignment: isMe ? Alignment.centerRight : isSystem ? Alignment.center : Alignment.centerLeft,
+      alignment: isMe
+          ? Alignment.centerRight
+          : isSystem
+          ? Alignment.center
+          : Alignment.centerLeft,
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: isMe ? Color(0xFFFAD232) : isSystem ? null : Colors.grey[300],
+          color: isMe
+              ? Color(0xFFFAD232)
+              : isSystem
+              ? null
+              : Colors.grey[300],
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
-          crossAxisAlignment: isMe ? CrossAxisAlignment.end : isSystem ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+          crossAxisAlignment: isMe
+              ? CrossAxisAlignment.end
+              : isSystem
+              ? CrossAxisAlignment.center
+              : CrossAxisAlignment.start,
           children: [
             Text(
               message['message'],
-              style: isSystem ? TextStyle(fontSize: 10, color: Colors.red) : TextStyle(fontSize: 16,),
+              style: isSystem
+                  ? TextStyle(fontSize: 10, color: Colors.red)
+                  : TextStyle(fontSize: 16),
             ),
             SizedBox(height: 5),
-            if(!isSystem)
-            Text(
-              'Sent by: ${message['nickname']}',
-              style: TextStyle(fontSize: 12, color: Colors.black54),
-            ),
+            if (!isSystem)
+              Text(
+                'Sent by: ${message['nickname']}',
+                style: TextStyle(fontSize: 12, color: Colors.black54),
+              ),
           ],
         ),
       ),

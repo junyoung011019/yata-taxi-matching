@@ -139,6 +139,7 @@ Widget roomContainer(BuildContext context, roomTitle, int MaxCount, int HeadCoun
                 destination: destination,
                 roomId: roomId,
                 accessToken: accessToken,
+                creation: false,
                 startTime: startTime); }, child: Text('참가하기', style:  TextStyle(color: Colors.black),),
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(
