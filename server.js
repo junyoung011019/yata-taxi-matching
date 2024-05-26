@@ -228,7 +228,7 @@ io.use((socket, next) => {
   try {
       const decoded = jwt.verify(token, AccessKey);
       socket.user = decoded;
-      console.log("jwt인증완료")
+      console.log("jwt인증완료");
       //인증 완료시 다음으로 이동
       next();
   } catch (err) {
@@ -236,15 +236,14 @@ io.use((socket, next) => {
   }
 });
 
-const roomCounts = {};
-const roomLimits = {};
+const channels={};
 
 //소켓 연결
 io.on('connection', (socket) => {
   console.log('A user connected');
   let channel;
   let nickname;
-  let channels = {};
+  let delroomId;
   function addChannel(channel, MaxCount) {
     channels[channel] = { MaxCount: MaxCount, clients: 1 };
   }
@@ -252,11 +251,13 @@ io.on('connection', (socket) => {
   //최대인원, jwt, id 
   socket.on('createion',(data)=>{
     const { MaxCount, channel } = data;
+    delroomId=channel;
+    console.log(MaxCount);
     addChannel(channel, MaxCount);
     currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
     socket.emit('channelCreated', { message: `Channel ${channel} created : `+ currentTime });
     console.log("현재 인원 : " +channels[channel].clients);
-    console.log("값 확인 : " + channels[channel]);
+    console.log("값 확인 : " + JSON.stringify(channels[channel]));
   });
 
   //참석할때 필요한 정보 jwt, 채널 아이디
@@ -274,7 +275,7 @@ io.on('connection', (socket) => {
       return;
     }
     //채널의 최대인원 확인
-    if (channel.clients >= channel.maxCount) {
+    if (channels[channel].clients >= channels[channel].MaxCount) {
         socket.emit('error', { message: 'Channel is full' });
         return;
     }
@@ -287,18 +288,22 @@ io.on('connection', (socket) => {
   });
 
   socket.on('message', (data) => {
-      currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
-      const { channel, message } = data;
-      console.log(nickname +'Message send: ' + message);
-      io.to(channel).emit('message', { nickname, message, currentTime });
+    currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
+    const { channel, message } = data;
+    console.log(nickname +'Message send: ' + message);
+    io.to(channel).emit('message', { nickname, message, currentTime });
   });
 
   socket.on('disconnect', () => {
-    channels[channel].clients-=1;
-    console.log('A user disconnected');
-    io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has lefted the channel`,currentTime: `${currentTime}` });
-    socket.leave(channel);
-    console.log("현재 인원 : " +channels[channel].clients);
+    if (channels[channel]) {
+      channels[channel].clients-=1;
+      console.log('A user disconnected');
+      io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has lefted the channel`,currentTime: `${currentTime}` });
+      socket.leave(channel);
+      console.log("현재 인원 : " +channels[channel].clients);
+    }else{
+      console.log(`Channel ${delroomId} deleted`);
+    }
   });
 });
 

@@ -2,88 +2,95 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Socket.IO JWT Authentication</title>
-    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.io Channel Management</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 </head>
 <body>
-    <h1>Socket.IO Chat with JWT Authentication</h1>
-    <form id="authForm">
-        <label for="token">JWT Token:</label>
-        <input type="text" id="token" required>
-        <br>
-        <label for="channel">Channel:</label>
-        <input type="text" id="channel" required>
-        <br>
-        <button type="submit">Join Channel</button>
-    </form>
-    <div id="chat" style="display:none;">
-        <h2>Chat</h2>
-        <div id="messages"></div>
-        <form id="messageForm">
-            <input type="text" id="message" required>
-            <button type="submit">Send</button>
+    <h1>Socket.io Channel Management</h1>
+    
+    <div>
+        <h2>Create Channel</h2>
+        <form id="createChannelForm">
+            <label for="createToken">JWT Token:</label>
+            <input type="text" id="createToken" required><br>
+
+            <label for="createChannel">Channel Name:</label>
+            <input type="text" id="createChannel" required><br>
+
+            <label for="createMaxCount">Max Count:</label>
+            <input type="number" id="createMaxCount" required><br>
+
+            <button type="submit">Create Channel</button>
         </form>
-        <button id="disconnectButton">Disconnect</button>
     </div>
+
+    <div>
+        <h2>Join Channel</h2>
+        <form id="joinChannelForm">
+            <label for="joinToken">JWT Token:</label>
+            <input type="text" id="joinToken" required><br>
+
+            <label for="joinChannel">Channel Name:</label>
+            <input type="text" id="joinChannel" required><br>
+
+            <button type="submit">Join Channel</button>
+        </form>
+    </div>
+
+    <div id="messages"></div>
+
     <script>
-        const authForm = document.getElementById('authForm');
-        const messageForm = document.getElementById('messageForm');
-        const messagesDiv = document.getElementById('messages');
-        const chatDiv = document.getElementById('chat');
-        const disconnectButton = document.getElementById('disconnectButton');
+        const serverUrl = "https://localhost"; // 서버 URL을 이곳에 명시하세요
 
-        let socket;
-
-        authForm.addEventListener('submit', function(event) {
+        document.getElementById('createChannelForm').addEventListener('submit', (event) => {
             event.preventDefault();
-            const token = document.getElementById('token').value;
-            const channel = document.getElementById('channel').value;
-            const nickname = prompt('Enter your nickname');
-            //www.jkla.shop
-            socket = io('https://localhost', {
+            const token = document.getElementById('createToken').value;
+            const channel = document.getElementById('createChannel').value;
+            const maxCount = document.getElementById('createMaxCount').value;
+
+            const socket = io(serverUrl, {
                 auth: {
                     token: token
                 }
             });
 
-            socket.on('connect_error', (err) => {
-                console.log('Connection Error:', err.message);
-                alert('Authentication error');
+            socket.emit('createion', { MaxCount: maxCount, channel: channel });
+
+            socket.on('channelCreated', (data) => {
+                const messages = document.getElementById('messages');
+                messages.innerHTML += `<p>${data.message}</p>`;
             });
 
-            socket.on('connect', () => {
-                console.log('Connected to server');
-                chatDiv.style.display = 'block';
-                socket.emit('joinChannel', { channel: channel, nickname: nickname });
+            socket.on('error', (data) => {
+                const messages = document.getElementById('messages');
+                messages.innerHTML += `<p>Error: ${data.message}</p>`;
             });
+        });
+
+        document.getElementById('joinChannelForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const token = document.getElementById('joinToken').value;
+            const channel = document.getElementById('joinChannel').value;
+
+            const socket = io(serverUrl, {
+                auth: {
+                    token: token
+                }
+            });
+
+            socket.emit('joinChannel', { channel: channel });
 
             socket.on('message', (data) => {
-                const messageElement = document.createElement('div');
-                messageElement.textContent = `[${data.currentTime}] ${data.nickname}: ${data.message}`;
-                messagesDiv.appendChild(messageElement);
+                const messages = document.getElementById('messages');
+                messages.innerHTML += `<p>${data.nickname}: ${data.message} (${data.currentTime})</p>`;
             });
 
-            socket.on('roomCountUpdate', (count) => {
-                console.log(`Room ${channel}: ${count} users`);
+            socket.on('error', (data) => {
+                const messages = document.getElementById('messages');
+                messages.innerHTML += `<p>Error: ${data.message}</p>`;
             });
-        });
-
-        messageForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const message = document.getElementById('message').value;
-            const channel = document.getElementById('channel').value;
-
-            socket.emit('message', { channel: channel, message: message });
-            document.getElementById('message').value = '';
-        });
-
-        disconnectButton.addEventListener('click', function() {
-            if (socket) {
-                socket.disconnect();
-                chatDiv.style.display = 'none';
-                messagesDiv.innerHTML = '';
-                console.log('Disconnected from server');
-            }
         });
     </script>
 </body>
