@@ -1,82 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Socket.io Chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Chat</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 300px;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+        }
+        #messages {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 20px;
+            height: 200px;
+            overflow-y: scroll;
+        }
+    </style>
 </head>
 <body>
-  <h2>Socket.io Chat</h2>
-  <div id="channel-creation">
-    <h3>Create Channel</h3>
-    <input type="text" id="creation-token" placeholder="JWT Token">
-    <input type="text" id="creation-channel" placeholder="Channel Name">
-    <input type="number" id="creation-maxcount" placeholder="Max Count">
-    <button onclick="createChannel()">Create Channel</button>
-  </div>
-  <div id="channel-join">
-    <h3>Join Channel</h3>
-    <input type="text" id="join-token" placeholder="JWT Token">
-    <input type="text" id="join-channel" placeholder="Channel Name">
-    <button onclick="joinChannel()">Join Channel</button>
-  </div>
-  <div id="messaging">
-    <h3>Messaging</h3>
-    <input type="text" id="message" placeholder="Message">
-    <button onclick="sendMessage()">Send Message</button>
-  </div>
-  <div id="chat">
-    <h3>Chat</h3>
-    <div id="messages"></div>
-  </div>
+    <div class="container">
+        <h2>Socket.IO Chat</h2>
+        <input type="text" id="token" placeholder="JWT Token">
+        <input type="text" id="channel" placeholder="Channel">
+        <input type="number" id="maxCount" placeholder="Max Count">
+        <button onclick="createChannel()">Create Channel</button>
+        <button onclick="joinChannel()">Join Channel</button>
+        <button onclick="disconnect()">Disconnect</button>
+        <div id="messages"></div>
+        <input type="text" id="message" placeholder="Type a message">
+        <button onclick="sendMessage()">Send</button>
+    </div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="https://momentjs.com/downloads/moment.js"></script>
-  <script>
-    const socket = io('https://www.jkla.shop'); // 로컬 서버에 연결
+    <script>
+        let socket;
 
-    function createChannel() {
-      const token = document.getElementById('creation-token').value;
-      const channel = document.getElementById('creation-channel').value;
-      const MaxCount = document.getElementById('creation-maxcount').value;
+        function connectSocket() {
+            socket = io('https://localhost', {
+                auth: {
+                    token: document.getElementById('token').value
+                }
+            });
 
-      socket.auth = { token };
-      socket.connect();
+            socket.on('connect_error', (err) => {
+                console.error('Connection error:', err);
+            });
 
-      socket.emit('creation', { MaxCount, channel });
-    }
+            socket.on('channelCreated', (data) => {
+                alert(data.message);
+            });
 
-    function joinChannel() {
-      const token = document.getElementById('join-token').value;
-      const channel = document.getElementById('join-channel').value;
+            socket.on('message', (data) => {
+                const messagesDiv = document.getElementById('messages');
+                const messageElement = document.createElement('div');
+                messageElement.textContent = `${data.currentTime} - ${data.nickname}: ${data.message}`;
+                messagesDiv.appendChild(messageElement);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
 
-      socket.auth = { token };
-      socket.connect();
+            socket.on('disconnect', () => {
+                console.log('Disconnected from server');
+            });
+        }
 
-      socket.emit('joinChannel', { channel });
-    }
+        function createChannel() {
+            const token = document.getElementById('token').value;
+            const channel = document.getElementById('channel').value;
+            const maxCount = document.getElementById('maxCount').value;
 
-    function sendMessage() {
-      const message = document.getElementById('message').value;
-      const channel = document.getElementById('join-channel').value;
+            if (!socket || !socket.connected) {
+                connectSocket();
+            }
 
-      socket.emit('message', { channel, message });
-      document.getElementById('message').value = '';
-    }
+            socket.emit('creation', { MaxCount: maxCount, channel });
+        }
 
-    socket.on('channelCreated', (data) => {
-      console.log(data.message);
-    });
+        function joinChannel() {
+            const token = document.getElementById('token').value;
+            const channel = document.getElementById('channel').value;
 
-    socket.on('message', (data) => {
-      const messageElement = document.createElement('div');
-      messageElement.textContent = `${data.currentTime} - ${data.nickname}: ${data.message}`;
-      document.getElementById('messages').appendChild(messageElement);
-    });
+            if (!socket || !socket.connected) {
+                connectSocket();
+            }
 
-    socket.on('error', (data) => {
-      alert(data.message);
-    });
-  </script>
+            socket.emit('joinChannel', { channel });
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            const channel = document.getElementById('channel').value;
+            socket.emit('message', { channel, message });
+            document.getElementById('message').value = '';
+        }
+
+        function disconnect() {
+            if (socket && socket.connected) {
+                socket.disconnect();
+            }
+        }
+    </script>
 </body>
 </html>
