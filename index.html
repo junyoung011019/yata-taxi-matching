@@ -39,10 +39,20 @@
         </form>
     </div>
 
+    <div id="chat" style="display:none;">
+        <h2>Chat</h2>
+        <form id="messageForm">
+            <label for="message">Message:</label>
+            <input type="text" id="message" required><br>
+            <button type="submit">Send Message</button>
+        </form>
+    </div>
+
     <div id="messages"></div>
 
     <script>
-        const serverUrl = "https://localhost"; // 서버 URL을 이곳에 명시하세요
+        const serverUrl = "https://www.jkla.shop"; // 서버 URL을 이곳에 명시하세요
+        let socket;
 
         document.getElementById('createChannelForm').addEventListener('submit', (event) => {
             event.preventDefault();
@@ -50,7 +60,7 @@
             const channel = document.getElementById('createChannel').value;
             const maxCount = document.getElementById('createMaxCount').value;
 
-            const socket = io(serverUrl, {
+            socket = io(serverUrl, {
                 auth: {
                     token: token
                 }
@@ -61,6 +71,7 @@
             socket.on('channelCreated', (data) => {
                 const messages = document.getElementById('messages');
                 messages.innerHTML += `<p>${data.message}</p>`;
+                document.getElementById('chat').style.display = 'block';
             });
 
             socket.on('error', (data) => {
@@ -74,7 +85,7 @@
             const token = document.getElementById('joinToken').value;
             const channel = document.getElementById('joinChannel').value;
 
-            const socket = io(serverUrl, {
+            socket = io(serverUrl, {
                 auth: {
                     token: token
                 }
@@ -85,12 +96,20 @@
             socket.on('message', (data) => {
                 const messages = document.getElementById('messages');
                 messages.innerHTML += `<p>${data.nickname}: ${data.message} (${data.currentTime})</p>`;
+                document.getElementById('chat').style.display = 'block';
             });
 
             socket.on('error', (data) => {
                 const messages = document.getElementById('messages');
                 messages.innerHTML += `<p>Error: ${data.message}</p>`;
             });
+        });
+
+        document.getElementById('messageForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const message = document.getElementById('message').value;
+            socket.emit('message', { channel: socket.channel, message: message });
+            document.getElementById('message').value = '';
         });
     </script>
 </body>

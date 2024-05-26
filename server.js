@@ -242,17 +242,19 @@ const channels={};
 io.on('connection', (socket) => {
   console.log('A user connected');
   let channel;
-  let nickname;
+  let nickname=socket.user.NickName;
   let delroomId;
   function addChannel(channel, MaxCount) {
-    channels[channel] = { MaxCount: MaxCount, clients: 1 };
+    if (!channels[channel]) {
+    channels[channel] = { MaxCount: MaxCount, clients: 1, creator: socket.user.NickName };
+    };
   }
 
   //최대인원, jwt, id 
-  socket.on('createion',(data)=>{
+  socket.on('creation',(data)=>{
     const { MaxCount, channel } = data;
     delroomId=channel;
-    console.log(MaxCount);
+    console.log("방 생성 입니다 / 최대 인원 :"+ MaxCount+"채널"+channel);
     addChannel(channel, MaxCount);
     currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
     socket.emit('channelCreated', { message: `Channel ${channel} created : `+ currentTime });
@@ -265,22 +267,20 @@ io.on('connection', (socket) => {
     //입력받은 data에서 채널 추출해서 참가 -> 채널번호는 _id로
     currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
     channel=data.channel;
-    //연결된 채널이 있을 경우
-    if(channel){
-      socket.leave(channel);
-    }
-    //입력한 채널이 없을 경우
-    if (!channel) {
-      socket.emit('error', { message: 'Channel does not exist' });
-      return;
-    }
+    
+    //입력한 채널이 존재하지 않을 경우 추가해야함.
+    
+
     //채널의 최대인원 확인
     if (channels[channel].clients >= channels[channel].MaxCount) {
         socket.emit('error', { message: 'Channel is full' });
+        channels[channel].clients+=1;
+        socket.disconnect(true);
         return;
     }
     socket.join(channel);
     channels[channel].clients+=1;
+  
     nickname = socket.user.NickName;
     console.log(`${nickname} joined channel: ${channel}`);
     console.log("현재 인원 : " +channels[channel].clients);
@@ -294,18 +294,35 @@ io.on('connection', (socket) => {
     io.to(channel).emit('message', { nickname, message, currentTime });
   });
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async() => {
+    //채널이 존재하는지 확인
     if (channels[channel]) {
       channels[channel].clients-=1;
       console.log('A user disconnected');
       io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has lefted the channel`,currentTime: `${currentTime}` });
       socket.leave(channel);
       console.log("현재 인원 : " +channels[channel].clients);
-    }else{
-      console.log(`Channel ${delroomId} deleted`);
     }
-  });
+      if(channels[channel].clients===0){
+        console.log(`Channel ${delroomId} deleted`);
+        try{
+          await client.connect(); // MongoDB 클라이언트 연결
+          const database = client.db('YATA');
+          const RecruitingsCollection = database.collection('Recruiting');
+          const result = await RecruitingsCollection.deleteOne({ _id: delroomId });
+          console.log({msg : '방 삭제 완료', roomId : delroomId, result});
+        }catch (error) {
+          console.error("Error saving data:", error);
+          res.status(500).send("Error saving data");
+        } finally {
+          await client.close(); // MongoDB 클라이언트 연결 해제
+        }
+      }
+      
+    })
+  
 });
+
 
 //소켓 에러 처리
 io.engine.on("connection_error", (err) => {
