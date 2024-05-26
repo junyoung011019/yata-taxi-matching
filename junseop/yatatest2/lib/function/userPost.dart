@@ -127,19 +127,6 @@ class UserPost {
     }
   }
 
-  //모집방 리스트 요청
-  // List<RoomStruct> post_recruitmentRoomList_data() {
-  //
-  //   // List<RoomStruct> roomList = [];
-  //   // roomList.add(RoomStruct("1번방", 1, "학교", 1));
-  //   // roomList.add(RoomStruct("2번방", 2, "학교", 2));
-  //   // roomList.add(RoomStruct("3번방", 3, "학교", 3));
-  //   // roomList.add(RoomStruct("4번방", 4, "학교", 4));
-  //   // roomList.add(RoomStruct("5번방", 5, "학교", 5));
-  //   // roomList.add(RoomStruct("6번방", 6, "학교", 6));
-  //
-  //   return roomList;
-  // }
   Future <List<Map<String, dynamic>>> post_recruitmentRoomList_data(BuildContext context) async{
     try {
       var dio = await authDio(context);

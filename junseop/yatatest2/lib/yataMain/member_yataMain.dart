@@ -179,47 +179,6 @@ class _Member_yataMainState extends State<Member_yataMain> {
                     .height * 0.04),
                 Flexible(
                   child: ElevatedButton(
-                    onPressed: () => handleAction(context, "채팅창바로가기"),
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.all(10),
-                      backgroundColor: Color(0xFFFAD232),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      minimumSize: Size(
-                        MediaQuery
-                            .of(context)
-                            .size
-                            .width * 0.7, // 버튼의 너비 지정
-                        MediaQuery
-                            .of(context)
-                            .size
-                            .height *
-                            0.08, // 버튼의 높이 지정
-                      ),
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        '채팅창 바로가기',
-                        style: TextStyle(
-                          fontSize: MediaQuery
-                              .of(context)
-                              .size
-                              .width * 0.05,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: MediaQuery
-                    .of(context)
-                    .size
-                    .height * 0.04),
-                Flexible(
-                  child: ElevatedButton(
                     onPressed: () {
                       handleAction(context, "로그아웃");
                       user_state.set_loginState(false);

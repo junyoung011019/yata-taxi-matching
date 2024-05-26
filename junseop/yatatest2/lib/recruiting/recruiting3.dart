@@ -170,9 +170,10 @@ class _Recruiting3State extends State<Recruiting3> {
                           widget.destination,
                           widget.startTime
                       );
-
-                      if(roomId != ""){
+                      print("모집하기(방생성) 요청시 roomId: $roomId");
+                      if(roomId.isNotEmpty){
                         String? accessToken = await storage.read(key: 'ACCESS_TOKEN');
+                        print("모집하기(방생성) 요청시 roomId: $accessToken");
                         if(accessToken == null) accessToken = '';
 
                         Navigator.popUntil(context, ModalRoute.withName("memberMain"));

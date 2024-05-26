@@ -54,6 +54,7 @@ class SocketService {
 
   // 메세지 전송 함수
   void sendMessage(String roomId, String message) {
+    print('Sending message: $message to channel: $roomId');
     socket.emit('message', {'channel': roomId, 'message': message});
   }
 

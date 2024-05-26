@@ -45,6 +45,7 @@ class _ChatRoomState extends State<ChatRoom> {
     print("내 닉네임: $myNick");
     socket = SocketService(widget.accessToken, widget.roomId, widget.creation, widget.MaxCount);
     socket.onMessage((data) {
+      print("메시지 수신: $data");
       if (mounted) {
         setState(() {
           messages.add(data);
@@ -56,6 +57,7 @@ class _ChatRoomState extends State<ChatRoom> {
 
   void sendMessage() {
     if (_controller.text.isNotEmpty) {
+      print("sendMessage호출!!!!");
       socket.sendMessage(widget.roomId, _controller.text);
       _controller.clear();
     }
@@ -153,11 +155,31 @@ class _ChatRoomState extends State<ChatRoom> {
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: isMe
-              ? Color(0xFFFAD232)
+              ? Colors.white//Color(0xFFFAD232)
               : isSystem
               ? null
-              : Colors.grey[300],
-          borderRadius: BorderRadius.circular(10),
+              : Colors.white,//Colors.grey[300],
+
+          border: isSystem
+              ? null
+              : isMe
+              ? Border.all( color: const Color(0xFFFAD232), width: 2.0,)
+              : Border.all( color: const Color(0xFFC79467), width: 2.0,),
+
+          borderRadius: isMe ?
+          BorderRadius.only(
+            topLeft: Radius.circular(10.0),
+            topRight: Radius.circular(10.0),
+            bottomLeft: Radius.circular(10.0),
+            bottomRight: Radius.circular(0.0),
+          ) :
+          BorderRadius.only(
+            topLeft: Radius.circular(10.0),
+            topRight: Radius.circular(10.0),
+            bottomLeft: Radius.circular(0.0),
+            bottomRight: Radius.circular(10.0),
+          ),
+          // BorderRadius.circular(10),
         ),
         child: Column(
           crossAxisAlignment: isMe
@@ -175,8 +197,8 @@ class _ChatRoomState extends State<ChatRoom> {
             SizedBox(height: 5),
             if (!isSystem)
               Text(
-                'Sent by: ${message['nickname']}',
-                style: TextStyle(fontSize: 12, color: Colors.black54),
+                '${message['nickname']}',
+                style: TextStyle(fontSize: 10, color: Colors.black54),
               ),
           ],
         ),
