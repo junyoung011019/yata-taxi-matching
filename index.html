@@ -41,16 +41,25 @@
         <button onclick="createChannel()">Create Channel</button>
         <button onclick="joinChannel()">Join Channel</button>
         <button onclick="disconnect()">Disconnect</button>
+        <button onclick="checkChannelInfo()">Check Channel Info</button>
         <div id="messages"></div>
         <input type="text" id="message" placeholder="Type a message">
         <button onclick="sendMessage()">Send</button>
+        <div id="channel-info" style="margin-top: 20px;">
+            <h3>Channel Information</h3>
+            <p>Channel ID: <span id="channel-id"></span></p>
+            <p>Current Users: <span id="current-users"></span></p>
+            <p>Max Users: <span id="max-users"></span></p>
+        </div>
     </div>
 
     <script>
         let socket;
 
         function connectSocket() {
-            socket = io('http://localhost', {
+            //https://localhost
+            //https://www.jkla.shop   
+            socket = io('https://localhost', {
                 auth: {
                     token: document.getElementById('token').value
                 }
@@ -79,18 +88,21 @@
             socket.on('disconnect', () => {
                 console.log('Disconnected from server');
             });
+
+            socket.on('channel-info', (data) => {
+                document.getElementById('channel-id').textContent = data.channel;
+                document.getElementById('current-users').textContent = data.headCount;
+                document.getElementById('max-users').textContent = data.MaxCount;
+            });
         }
 
         function createChannel() {
-            const token = document.getElementById('token').value;
-            const channel = document.getElementById('channel').value;
             const MaxCount = document.getElementById('MaxCount').value;
-
+            const channel = document.getElementById('channel').value;
             if (!socket || !socket.connected) {
                 connectSocket();
             }
-
-            socket.emit('creation', { MaxCount: MaxCount, channel });
+            socket.emit('creation', { MaxCount, channel });
         }
 
         function joinChannel() {
@@ -114,6 +126,18 @@
         function disconnect() {
             if (socket && socket.connected) {
                 socket.disconnect();
+            }
+        }
+
+        function checkChannelInfo() {
+            const channel = document.getElementById('channel').value;
+            if (!socket || !socket.connected) {
+                connectSocket();
+                socket.on('connect', () => {
+                    socket.emit('channel-info', { channel });
+                });
+            } else {
+                socket.emit('channel-info', { channel });
             }
         }
     </script>

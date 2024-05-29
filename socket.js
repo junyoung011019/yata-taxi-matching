@@ -13,6 +13,7 @@ moment.tz.setDefault("Asia/Seoul");
 var currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
 const { MongoClient } = require('mongodb');
 const { v4 : uuid4 } = require('uuid');
+const { channel } = require("diagnostics_channel");
 
 const AccessKey=process.env.JwtAccessSecretKey;
 const app = express();
@@ -103,6 +104,7 @@ io.on('connection', (socket) => {
     headCount=1;
     socket.join(channel);
     console.log("현재 인원 : "+channels[channel].clients);
+    io.emit('channel-info',{channel,headCount,MaxCount})
   });
 
   //참석할때 필요한 정보 jwt, 채널 아이디
@@ -132,6 +134,7 @@ io.on('connection', (socket) => {
     console.log(`${nickname} joined channel: ${channel}`);
     console.log("현재 인원 : " +channels[channel].clients);
     io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has joined the channel`,currentTime: `${currentTime}` });
+    io.emit('channel-info',{channel,headCount,MaxCount})
   });
 
   socket.on('message', (data) => {
@@ -157,8 +160,8 @@ io.on('connection', (socket) => {
             io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has lefted the channel`,currentTime: `${currentTime}` });
             console.log("현재 인원 : " +channels[currentChannel].clients);
           }
-        }
-    
+      }
+      io.emit('channel-info',{channel,headCount,MaxCount})
   })
   
 });
@@ -170,6 +173,14 @@ io.engine.on("connection_error", (err) => {
   console.log(err.code);     // the error code, for example 1
   console.log(err.message);  // the error message, for example "Session ID unknown"
   console.log(err.context);  // some additional error context
+});
+
+io.on('channel-info', (socketData) => {
+  console.log('Channel ID:', socketData.channel);
+  console.log('Current users:', socketData.headCount);
+  console.log('Max users:', socketData.MaxCount);
+  
+  // 받은 채널 정보를 활용하여 필요한 작업 수행
 });
 
 httpServer.listen(80, () => {
