@@ -1,6 +1,7 @@
 const { Server } = require("socket.io");
 const express = require('express');
-const https=require('https');
+// const https=require('https');
+const http=require('http');
 const jwt = require('jsonwebtoken');
 require("dotenv").config();
 const fs=require('fs');
@@ -24,13 +25,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({origin: '*',}));
 
-const options = {
-    cert: fs.readFileSync(path.join(process.env.ssl_key_loc, process.env.key_f)),
-    key: fs.readFileSync(path.join(process.env.ssl_key_loc, process.env.key_p))
-};
+// const options = {
+//     cert: fs.readFileSync(path.join(process.env.ssl_key_loc, process.env.key_f)),
+//     key: fs.readFileSync(path.join(process.env.ssl_key_loc, process.env.key_p))
+// };
 
-const httpsServer=https.createServer(options,app);
-const io = new Server(httpsServer,{
+//const httpsServer=https.createServer(options,app);
+const httpServer = http.createServer(app);
+const io = new Server(httpServer,{
     cors: {
         origin: "*", // 필요한 경우 특정 도메인으로 변경합니다.
         methods: ["GET", "POST"],
@@ -38,14 +40,33 @@ const io = new Server(httpsServer,{
     }
 });
 
-//socketio jwt 토큰 인증
+const deleteChannelFromDB=async function (channel){
+  try{
+    await client.connect();
+    const database = client.db('YATA');
+    const RecruitingsCollection = database.collection('Recruiting');
+    
+    const result = await RecruitingsCollection.deleteOne({ _id: channel });
+    if (result.deletedCount === 1) {
+      console.log(`Successfully deleted channel with id: ${channel}`);
+    } else {
+      console.log(`No channel found with id: ${channel}`);
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+      await client.close();
+  }
+}
+
+
+// socketio jwt 토큰 인증
 io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) {
         return next(new Error('Authentication error'));
     }
     try {
-        console.log(token);
         const decoded = jwt.verify(token, AccessKey);
         socket.user = decoded;
         console.log("jwt인증완료");
@@ -60,11 +81,11 @@ const channels={};
 
 //소켓 연결
 io.on('connection', (socket) => {
-  console.log('A user connected');
-  let channel;
+  console.log('A user socket connected');
+  //let channel;
   let currentChannel;
+  let headCount;
   let nickname=socket.user.NickName;
-  let delroomId;
   function addChannel(channel, MaxCount) {
     if (!channels[channel]) {
     channels[channel] = { MaxCount: MaxCount, clients: 1 };
@@ -74,15 +95,14 @@ io.on('connection', (socket) => {
   //최대인원, jwt, id 
   socket.on('creation',(data)=>{
     const { MaxCount, channel } = data;
-    delroomId=channel;
-    console.log("방 생성 입니다 / 최대 인원 :"+ MaxCount+"채널"+channel);
+    console.log("방 생성 입니다 / 최대 인원 : "+ MaxCount+" / 채널"+channel);
     addChannel(channel, MaxCount);
     currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
     socket.emit('channelCreated', { message: `Channel ${channel} created : `+ currentTime });
-    console.log("현재 인원 : " +channels[channel].clients);
-    console.log("값 확인 : " + JSON.stringify(channels[channel]));
     currentChannel=channel;
+    headCount=1;
     socket.join(channel);
+    console.log("현재 인원 : "+channels[channel].clients);
   });
 
   //참석할때 필요한 정보 jwt, 채널 아이디
@@ -92,17 +112,21 @@ io.on('connection', (socket) => {
     channel=data.channel;
     currentChannel=channel;
     //입력한 채널이 존재하지 않을 경우 추가해야함.
-    
+    if (!channels[channel]) {
+      socket.emit('error', { message: 'Channel does not exist' });
+      console.log('Channel does not exist')
+      return;
+    }
 
     //채널의 최대인원 확인
     if (channels[channel].clients >= channels[channel].MaxCount) {
         socket.emit('error', { message: 'Channel is full' });
-        channels[channel].clients+=1;
-        socket.disconnect(true);
+        console.log('Channel is full');
         return;
     }
     socket.join(channel);
     channels[channel].clients+=1;
+    headCount+=1;
   
     nickname = socket.user.NickName;
     console.log(`${nickname} joined channel: ${channel}`);
@@ -117,24 +141,25 @@ io.on('connection', (socket) => {
     io.to(channel).emit('message', { nickname, message, currentTime });
   });
 
-    socket.on('disconnect', async() => {
-        //채널이 존재하는지 확인        
-        if (channels[delroomId]) {
-            console.log("왜안됨?"+delroomId);       //현재 방 번호 1
-            console.log("왜안됨2?"+channels[delroomId].clients);        //현재 인원 2
-            channels[delroomId].clients-=1;
-            //채널에 0명일때
-            if(channels[delroomId].clients===0){
-                console.log(`Channel ${delroomId} deleted`);
-            }
-            console.log('A user disconnected');
+  socket.on('disconnect', async() => {
+      //채널이 존재하는지 확인        
+      if (channels[currentChannel]) {
+          channels[currentChannel].clients-=1;
+          headCount-=1;
+          console.log('A user disconnected');
+          socket.leave(currentChannel);
+          //채널에 0명일때
+          if (channels[currentChannel].clients === 0) {
+            delete channels[currentChannel];
+            deleteChannelFromDB(currentChannel);
+            console.log(`Channel ${currentChannel} deleted`);
+          }else{
             io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has lefted the channel`,currentTime: `${currentTime}` });
-            socket.leave(channel);
-            console.log("현재 인원 : " +channels[delroomId].clients);
+            console.log("현재 인원 : " +channels[currentChannel].clients);
+          }
         }
-        
     
-    })
+  })
   
 });
 
@@ -147,13 +172,6 @@ io.engine.on("connection_error", (err) => {
   console.log(err.context);  // some additional error context
 });
 
-io.engine.on("connection_error", (err) => {
-    console.log(err.req);      // the request object
-    console.log(err.code);     // the error code, for example 1
-    console.log(err.message);  // the error message, for example "Session ID unknown"
-    console.log(err.context);  // some additional error context
-});
-
-httpsServer.listen(443, () => {
+httpServer.listen(80, () => {
     console.log("HTTPS Server running on port 443");
 });

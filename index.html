@@ -37,7 +37,7 @@
         <h2>Socket.IO Chat</h2>
         <input type="text" id="token" placeholder="JWT Token">
         <input type="text" id="channel" placeholder="Channel">
-        <input type="number" id="maxCount" placeholder="Max Count">
+        <input type="number" id="MaxCount" placeholder="Max Count">
         <button onclick="createChannel()">Create Channel</button>
         <button onclick="joinChannel()">Join Channel</button>
         <button onclick="disconnect()">Disconnect</button>
@@ -50,7 +50,7 @@
         let socket;
 
         function connectSocket() {
-            socket = io('https://localhost', {
+            socket = io('http://localhost', {
                 auth: {
                     token: document.getElementById('token').value
                 }
@@ -72,6 +72,10 @@
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             });
 
+            socket.on('error', (data) => {
+                alert(data.message);
+            });
+
             socket.on('disconnect', () => {
                 console.log('Disconnected from server');
             });
@@ -80,13 +84,13 @@
         function createChannel() {
             const token = document.getElementById('token').value;
             const channel = document.getElementById('channel').value;
-            const maxCount = document.getElementById('maxCount').value;
+            const MaxCount = document.getElementById('MaxCount').value;
 
             if (!socket || !socket.connected) {
                 connectSocket();
             }
 
-            socket.emit('creation', { MaxCount: maxCount, channel });
+            socket.emit('creation', { MaxCount: MaxCount, channel });
         }
 
         function joinChannel() {
