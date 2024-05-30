@@ -86,6 +86,9 @@ app.post('/Matching', VerifyJwtAccessToken, async function (req, res) {
 
 //인원 순 매칭
 
+
+//매칭해서 리턴 해줄때 모든 정보를 넘겨줘야함
+
 //방 목록 보기
 app.get('/ShowRecruiting', VerifyJwtAccessToken, async function (req, res) {
     try {    

@@ -280,6 +280,7 @@ io.on('connection', (socket) => {
     headCount=1;
     socket.join(channel);
     console.log("현재 인원 : "+channels[channel].clients);
+    io.emit('channel-info',{channel,headCount,MaxCount})
   });
 
   //참석할때 필요한 정보 jwt, 채널 아이디
@@ -309,6 +310,7 @@ io.on('connection', (socket) => {
     console.log(`${nickname} joined channel: ${channel}`);
     console.log("현재 인원 : " +channels[channel].clients);
     io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has joined the channel`,currentTime: `${currentTime}` });
+    io.emit('channel-info',{channel,headCount,MaxCount})
   });
 
   socket.on('message', (data) => {
@@ -335,6 +337,7 @@ io.on('connection', (socket) => {
             console.log("현재 인원 : " +channels[currentChannel].clients);
           }
       }
+      io.emit('channel-info',{channel,headCount,MaxCount});
     })
 
 });
