@@ -254,7 +254,7 @@ io.use((socket, next) => {
   }
 });
 
-const channels={};
+let channels={};
 
 //소켓 연결
 io.on('connection', (socket) => {
@@ -265,7 +265,7 @@ io.on('connection', (socket) => {
   let nickname=socket.user.NickName;
   function addChannel(channel, MaxCount) {
     if (!channels[channel]) {
-    channels[channel] = { MaxCount: MaxCount, clients: 1 };
+      channels[channel] = { channel, MaxCount, clients: 1 };
     };
   }
 

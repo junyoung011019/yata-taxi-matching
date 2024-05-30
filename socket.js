@@ -77,7 +77,7 @@ io.use((socket, next) => {
     }
   });
 
-const channels={};
+let channels={};
 
 //소켓 연결
 io.on('connection', (socket) => {
@@ -88,7 +88,7 @@ io.on('connection', (socket) => {
   let nickname=socket.user.NickName;
   function addChannel(channel, MaxCount) {
     if (!channels[channel]) {
-    channels[channel] = { MaxCount: MaxCount, clients: 1 };
+        channels[channel] = { channel, MaxCount, clients: 1 };
     };
   }
 
@@ -104,7 +104,7 @@ io.on('connection', (socket) => {
     socket.join(channel);
     console.log("현재 인원 : "+channels[channel].clients);
     io.emit('channel-info',{channel,headCount,MaxCount})
-    console.log({channel,headCount,MaxCount});
+    console.log(channels[channel]);
   });
 
   //참석할때 필요한 정보 jwt, 채널 아이디
@@ -136,7 +136,7 @@ io.on('connection', (socket) => {
     console.log("현재 인원 : " +channels[channel].clients);
     io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has joined the channel`,currentTime: `${currentTime}` });
     io.emit('channel-info',{channel,headCount})
-    console.log({channel,headCount});
+    console.log(channels[channel]);
   });
 
   socket.on('message', (data) => {
@@ -164,7 +164,7 @@ io.on('connection', (socket) => {
           }
       }
       io.emit('channel-info',{channel,headCount})
-      console.log({channel,headCount});
+      console.log(channels[channel]);
   })
   
 });
@@ -178,13 +178,12 @@ io.engine.on("connection_error", (err) => {
   console.log(err.context);  // some additional error context
 });
 
-io.on('channel-info', (socketData) => {
-  console.log('Channel ID:', socketData.channel);
-  console.log('Current users:', socketData.headCount);
-  console.log('Max users:', socketData.MaxCount);
-  
-  // 받은 채널 정보를 활용하여 필요한 작업 수행
+
+app.get('/', function (req, res) {
+    console.log(channels);
+    res.status(200).json(channels);
 });
+
 
 httpsServer.listen(443, () => {
     console.log("HTTPS Server running on port 443");
