@@ -93,7 +93,7 @@ app.post('/Matching', VerifyJwtAccessToken, async function (req, res) {
 //방 목록 보기
 app.get('/ShowRecruiting', VerifyJwtAccessToken, async function (req, res) {
     try {    
-        const list=await ShowList();
+        const list=await ShowDBList();
         res.status(200).json(list);
         console.log("리스트 반환 성공");
     } catch (error) {

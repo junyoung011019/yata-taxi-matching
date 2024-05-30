@@ -40,6 +40,28 @@ const io = new Server(httpsServer,{
     }
 });
 
+//jwt 액세스키 검증
+const VerifyJwtAccessToken = async function(req, res, next){
+    const authHeader = req.headers['authorization'];
+    const token = authHeader.split(' ')[1]
+    if (!token) {
+        return res.status(401).send('Access Denied: No Token Provided!');
+    }
+  
+    try {
+        const decoded = jwt.verify(token, AccessKey);
+        req.user=decoded;
+        next();
+    } catch (err) {
+        // 만료된 토큰 처리
+        if (err.name === 'TokenExpiredError') {
+            return res.status(401).send('Token Expired');
+        }
+        // 다른 모든 인증 오류 처리
+        res.status(400).send('Invalid Token');
+    }
+  }
+
 const deleteChannelFromDB=async function (channel){
   try{
     await client.connect();
@@ -104,7 +126,6 @@ io.on('connection', (socket) => {
     socket.join(channel);
     console.log("현재 인원 : "+channels[channel].clients);
     io.emit('channel-info',{channel,headCount,MaxCount})
-    console.log(channels[channel]);
   });
 
   //참석할때 필요한 정보 jwt, 채널 아이디
@@ -136,7 +157,6 @@ io.on('connection', (socket) => {
     console.log("현재 인원 : " +channels[channel].clients);
     io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has joined the channel`,currentTime: `${currentTime}` });
     io.emit('channel-info',{channel,headCount})
-    console.log(channels[channel]);
   });
 
   socket.on('message', (data) => {
@@ -164,11 +184,9 @@ io.on('connection', (socket) => {
           }
       }
       io.emit('channel-info',{channel,headCount})
-      console.log(channels[channel]);
   })
   
 });
-
 
 //소켓 에러 처리
 io.engine.on("connection_error", (err) => {
@@ -176,6 +194,71 @@ io.engine.on("connection_error", (err) => {
   console.log(err.code);     // the error code, for example 1
   console.log(err.message);  // the error message, for example "Session ID unknown"
   console.log(err.context);  // some additional error context
+});
+
+
+const ShowDBList = async function(){
+    try{
+        await client.connect(); // MongoDB 클라이언트 연결
+        const database = client.db('YATA');
+        const RecruitingsCollection = database.collection('Recruiting');
+        const recruitments=await RecruitingsCollection.find({}).toArray();
+        return recruitments;
+    }catch (error) {
+        console.error("Error saving data:", error);
+        throw error;
+    } finally {
+        await client.close(); // MongoDB 클라이언트 연결 해제
+    }
+}
+
+function mergeData(rooms, socket) {
+    return rooms.map(room => ({
+      "_id": room._id,
+      "roomTitle": room.roomTitle,
+      "destination": room.destination,
+      "startTime": room.startTime,
+      "CreationTime": room.CreationTime,
+      "RoomManager": room.RoomManager,
+      "MaxCount": socket[room._id].MaxCount,
+      "clients": socket[room._id].clients
+    }));
+  }
+
+//방향 확인 db에 불러오기
+app.post('/Matching', VerifyJwtAccessToken, async function (req, res) {
+    currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
+    //db에서 정보 받아오기
+    const showList=await ShowDBList();
+    const DBlist = showList.map(({ _id, destination, CreationTime, startTime }) => ({
+        id: _id,
+        destination,
+        CreationTime,
+        startTime
+      }));
+    //소켓의 정보
+    //channels
+    const LiveRoomData=mergeData(DBlist,channels);
+    res.status(200).json(LiveRoomData);
+  })
+//시간 순 매칭
+
+//인원 순 매칭
+
+
+//매칭해서 리턴 해줄때 모든 정보를 넘겨줘야함
+
+//방 목록 보기
+app.get('/ShowRecruiting', VerifyJwtAccessToken, async function (req, res) {
+    try {    
+        const DBlist=await ShowDBList();
+        const LiveRoomData=mergeData(DBlist,channels);
+        res.status(200).json(LiveRoomData);
+        console.log("리스트 반환 성공");
+    } catch (error) {
+        console.error('Error fetching recruitment list:', error);
+        res.status(500).json(error);
+    }
 });
 
 
