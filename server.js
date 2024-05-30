@@ -304,13 +304,13 @@ io.on('connection', (socket) => {
     }
     socket.join(channel);
     channels[channel].clients+=1;
-    headCount+=1;
+    headCount=channels[channel].clients;
 
     nickname = socket.user.NickName;
     console.log(`${nickname} joined channel: ${channel}`);
     console.log("현재 인원 : " +channels[channel].clients);
     io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has joined the channel`,currentTime: `${currentTime}` });
-    io.emit('channel-info',{channel,headCount,MaxCount})
+    io.emit('channel-info',{channel,headCount})
   });
 
   socket.on('message', (data) => {
@@ -337,7 +337,7 @@ io.on('connection', (socket) => {
             console.log("현재 인원 : " +channels[currentChannel].clients);
           }
       }
-      io.emit('channel-info',{channel,headCount,MaxCount});
+      io.emit('channel-info',{channel,headCount});
     })
 
 });

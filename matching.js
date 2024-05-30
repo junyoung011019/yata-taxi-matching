@@ -68,6 +68,7 @@ const ShowDBList = async function(){
 //방향 확인 db에 불러오기
 app.post('/Matching', VerifyJwtAccessToken, async function (req, res) {
     currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
+    //db에서 정보 받아오기
     const showList=await ShowDBList();
     const DBlist = showList.map(({ _id, destination, CreationTime, startTime }) => ({
         id: _id,
@@ -75,8 +76,8 @@ app.post('/Matching', VerifyJwtAccessToken, async function (req, res) {
         CreationTime,
         startTime
       }));
-    console.log(DBlist)
-    
+    console.log(DBlist);
+    //소켓에서 정보 받아오기
 
 
 

@@ -1,7 +1,6 @@
 const { Server } = require("socket.io");
 const express = require('express');
-// const https=require('https');
-const http=require('http');
+const https=require('https');
 const jwt = require('jsonwebtoken');
 require("dotenv").config();
 const fs=require('fs');
@@ -26,14 +25,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({origin: '*',}));
 
-// const options = {
-//     cert: fs.readFileSync(path.join(process.env.ssl_key_loc, process.env.key_f)),
-//     key: fs.readFileSync(path.join(process.env.ssl_key_loc, process.env.key_p))
-// };
+ const options = {
+    cert: fs.readFileSync(path.join(process.env.ssl_key_loc, process.env.key_f)),
+    key: fs.readFileSync(path.join(process.env.ssl_key_loc, process.env.key_p))
+};
 
-//const httpsServer=https.createServer(options,app);
-const httpServer = http.createServer(app);
-const io = new Server(httpServer,{
+const httpsServer=https.createServer(options,app);
+//const httpServer = http.createServer(app);
+const io = new Server(httpsServer,{
     cors: {
         origin: "*", // 필요한 경우 특정 도메인으로 변경합니다.
         methods: ["GET", "POST"],
@@ -105,13 +104,15 @@ io.on('connection', (socket) => {
     socket.join(channel);
     console.log("현재 인원 : "+channels[channel].clients);
     io.emit('channel-info',{channel,headCount,MaxCount})
+    console.log({channel,headCount,MaxCount});
   });
 
   //참석할때 필요한 정보 jwt, 채널 아이디
   socket.on('joinChannel', (data) => {
     //입력받은 data에서 채널 추출해서 참가 -> 채널번호는 _id로
     currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
-    channel=data.channel;
+    console.log(data);
+    const channel=data.channel;
     currentChannel=channel;
     //입력한 채널이 존재하지 않을 경우 추가해야함.
     if (!channels[channel]) {
@@ -128,13 +129,14 @@ io.on('connection', (socket) => {
     }
     socket.join(channel);
     channels[channel].clients+=1;
-    headCount+=1;
+    headCount=channels[channel].clients;
   
     nickname = socket.user.NickName;
     console.log(`${nickname} joined channel: ${channel}`);
     console.log("현재 인원 : " +channels[channel].clients);
     io.to(channel).emit('message', { nickname: 'System', message: `${nickname} has joined the channel`,currentTime: `${currentTime}` });
-    io.emit('channel-info',{channel,headCount,MaxCount})
+    io.emit('channel-info',{channel,headCount})
+    console.log({channel,headCount});
   });
 
   socket.on('message', (data) => {
@@ -161,7 +163,8 @@ io.on('connection', (socket) => {
             console.log("현재 인원 : " +channels[currentChannel].clients);
           }
       }
-      io.emit('channel-info',{channel,headCount,MaxCount})
+      io.emit('channel-info',{channel,headCount})
+      console.log({channel,headCount});
   })
   
 });
@@ -183,6 +186,6 @@ io.on('channel-info', (socketData) => {
   // 받은 채널 정보를 활용하여 필요한 작업 수행
 });
 
-httpServer.listen(80, () => {
+httpsServer.listen(443, () => {
     console.log("HTTPS Server running on port 443");
 });
