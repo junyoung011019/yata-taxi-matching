@@ -300,6 +300,7 @@ io.on('connection', (socket) => {
     if (channels[channel].clients >= channels[channel].MaxCount) {
         socket.emit('error', { message: 'Channel is full' });
         console.log('Channel is full');
+        channels[channel].clients+=1;
         return;
     }
     socket.join(channel);
@@ -351,14 +352,13 @@ console.log(err.message);  // the error message, for example "Session ID unknown
 console.log(err.context);  // some additional error context
 });
 
-//방 목록 보기 함수
-const ShowList = async function(){
+//DB 채팅창 목록 보기 함수
+const ShowDBList = async function(){
   try{
       await client.connect(); // MongoDB 클라이언트 연결
       const database = client.db('YATA');
       const RecruitingsCollection = database.collection('Recruiting');
       const recruitments=await RecruitingsCollection.find({}).toArray();
-      console.log(recruitments);
       return recruitments;
   }catch (error) {
       console.error("Error saving data:", error);
@@ -368,11 +368,25 @@ const ShowList = async function(){
   }
 }
 
+function mergeData(rooms, socket) {
+  return rooms.map(room => ({
+    "_id": room._id,
+    "roomTitle": room.roomTitle,
+    "destination": room.destination,
+    "startTime": room.startTime,
+    "CreationTime": room.CreationTime,
+    "RoomManager": room.RoomManager,
+    "MaxCount": socket[room._id].MaxCount,
+    "HeadCount": socket[room._id].clients
+  }));
+}
+
 //방 목록 보기
 app.get('/ShowRecruiting', VerifyJwtAccessToken, async function (req, res) {
   try {    
-      const list=await ShowList();
-      res.status(200).json(list);
+      const DBlist=await ShowDBList();
+      const LiveRoomData=mergeData(DBlist,channels);
+      res.status(200).json(LiveRoomData);
       console.log("리스트 반환 성공");
   } catch (error) {
       console.error('Error fetching recruitment list:', error);
