@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Chat</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 300px;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+        }
+        #messages {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 20px;
+            height: 200px;
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Socket.IO Chat</h2>
+        <input type="text" id="token" placeholder="JWT Token">
+        <input type="text" id="channel" placeholder="Channel">
+        <input type="number" id="MaxCount" placeholder="Max Count">
+        <button onclick="createChannel()">Create Channel</button>
+        <button onclick="joinChannel()">Join Channel</button>
+        <button onclick="disconnect()">Disconnect</button>
+        <div id="messages"></div>
+        <input type="text" id="message" placeholder="Type a message">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        let socket;
+
+        function connectSocket() {
+            //https://localhost
+            //https://www.jkla.shop
+            socket = io('https://localhost', {
+                auth: {
+                    token: document.getElementById('token').value
+                }
+            });
+
+            socket.on('connect_error', (err) => {
+                console.error('Connection error:', err);
+            });
+
+            socket.on('channelCreated', (data) => {
+                alert(data.message);
+            });
+
+            socket.on('message', (data) => {
+                const messagesDiv = document.getElementById('messages');
+                const messageElement = document.createElement('div');
+                messageElement.textContent = `${data.currentTime} - ${data.nickname}: ${data.message}`;
+                messagesDiv.appendChild(messageElement);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+
+            socket.on('error', (data) => {
+                alert(data.message);
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Disconnected from server');
+            });
+        }
+
+        function createChannel() {
+            const token = document.getElementById('token').value;
+            const channel = document.getElementById('channel').value;
+            const MaxCount = document.getElementById('MaxCount').value;
+
+            if (!socket || !socket.connected) {
+                connectSocket();
+            }
+
+            socket.emit('creation', { MaxCount: MaxCount, channel });
+        }
+
+        function joinChannel() {
+            const token = document.getElementById('token').value;
+            const channel = document.getElementById('channel').value;
+
+            if (!socket || !socket.connected) {
+                connectSocket();
+            }
+
+            socket.emit('joinChannel', { channel });
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            const channel = document.getElementById('channel').value;
+            socket.emit('message', { channel, message });
+            document.getElementById('message').value = '';
+        }
+
+        function disconnect() {
+            if (socket && socket.connected) {
+                socket.disconnect();
+            }
+        }
+    </script>
+</body>
+</html>
