@@ -88,6 +88,48 @@ void handleAction(BuildContext context, String action,
           },
         );
         break;
+      case "Channel is full":
+        print("case문 Channel is full 호출");
+        showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              title: Text('채널 가득 참'),
+              content: Text('방이 가득 찼습니다. 다른 방을 참가해주세요'),
+              actions: [
+                CupertinoDialogAction(
+                  child: Text('확인'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            );
+          },
+        );
+        break;
+        case "Channel does not exist":
+          print("case문 Channel does not exist 호출");
+        showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              title: Text('채널이 존재하지 않음'),
+              content: Text('방이 존재하지 않습니다. 다른 방을 참가해주세요'),
+              actions: [
+                CupertinoDialogAction(
+                  child: Text('확인'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            );
+          },
+        );
+        break;
       case "모집방":
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => RecruitmentRoom()));

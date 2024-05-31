@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:socket_io_client/socket_io_client.dart';
+import 'package:yatatest2/function/routing.dart';
 import 'package:yatatest2/function/socketService.dart';
 
 class ChatRoom extends StatefulWidget {
@@ -63,6 +64,16 @@ class _ChatRoomState extends State<ChatRoom> {
         setState(() {
           headCount = data['headCount'];
           print("현재 인원은? -> $headCount");
+        });
+      }
+    });
+
+    socket.onError((data) {
+      if (mounted) {
+        setState(() {
+          print(data);
+          if(data['message'] == "Channel is full") handleAction(context, "Channel is full");
+          if(data['message'] == "Channel does not exist") handleAction(context, "Channel does not exist");
         });
       }
     });

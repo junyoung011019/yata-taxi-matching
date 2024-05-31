@@ -18,6 +18,7 @@ class _Member_yataMainState extends State<Member_yataMain> {
     return Scaffold(
       body: GestureDetector(
         onTap: () {
+          FocusScope.of(context).unfocus();
           print('로그인 후 메인화면');
         },
         child: Container(

@@ -23,6 +23,7 @@ class _LogInState extends State<LogIn> {
     return Scaffold(
       body: GestureDetector(
         onTap: () {
+          FocusScope.of(context).unfocus();
           print('로그인 후 메인화면');
         },
         child: Container(
@@ -114,6 +115,7 @@ class _LogInState extends State<LogIn> {
                         0.07, // 아이디 입력 블럭의 가로 길이와 동일하게 설정
                     child: ElevatedButton(
                       onPressed: () async {
+                        FocusScope.of(context).unfocus(); //키보드 내리기
                         print('로그인');
                         userInfo[0] = _textControllers[0].text;
                         userInfo[1] = _textControllers[1].text;

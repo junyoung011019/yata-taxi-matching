@@ -70,6 +70,9 @@ class SocketService {
     print(callback);
     socket.on('channel-info', callback);
   }
+  void onError(Function(dynamic) callback) {
+    socket.on('error', callback);
+  }
   // 소켓 연결 해제
   void disconnect() {
     // if (_isDisconnected) return;

@@ -136,6 +136,7 @@ class UserPost {
       if (response.statusCode == 200) {
         print("상태코드 200");
         List<dynamic> data = response.data;
+        print(response.data);
         List<Map<String, dynamic>> roomList = data.map((item) {
           return {
             "roomId": item['_id'],
