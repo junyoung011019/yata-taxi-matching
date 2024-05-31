@@ -41,6 +41,10 @@ class SocketService {
       print('Received message: $data');
     });
 
+    socket.on('channel-info', (data) {
+      print('channel-info message: $data');
+    });
+
     // 연결 에러 이벤트 핸들러
     socket.on('connect_error', (error) {
       print('Connect error: $error');
@@ -60,6 +64,11 @@ class SocketService {
 
   void onMessage(Function(dynamic) callback) {
     socket.on('message', callback);
+  }
+  void onHeadCount(Function(dynamic) callback) {
+    print("채널인포 호출!");
+    print(callback);
+    socket.on('channel-info', callback);
   }
   // 소켓 연결 해제
   void disconnect() {

@@ -32,6 +32,7 @@ class _ChatRoomState extends State<ChatRoom> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+  late int headCount;
   late Map<String, dynamic> decodedToken;
   late String myNick;
   late SocketService socket;
@@ -40,10 +41,13 @@ class _ChatRoomState extends State<ChatRoom> {
   @override
   void initState() {
     super.initState();
+
     decodedToken = JwtDecoder.decode(widget.accessToken);
     myNick = decodedToken["NickName"];
     print("내 닉네임: $myNick");
+    headCount = widget.HeadCount;
     socket = SocketService(widget.accessToken, widget.roomId, widget.creation, widget.MaxCount);
+
     socket.onMessage((data) {
       print("메시지 수신: $data");
       if (mounted) {
@@ -53,6 +57,16 @@ class _ChatRoomState extends State<ChatRoom> {
         _scrollToBottom();
       }
     });
+
+    socket.onHeadCount((data) {
+      if (mounted) {
+        setState(() {
+          headCount = data['headCount'];
+          print("현재 인원은? -> $headCount");
+        });
+      }
+    });
+
   }
 
   void sendMessage() {
@@ -103,7 +117,7 @@ class _ChatRoomState extends State<ChatRoom> {
       ),
       body: Column(
         children: [
-          Text("참여 인원 : ${widget.HeadCount}/${widget.MaxCount}"),
+          Text("참여 인원 : $headCount/${widget.MaxCount}"),
           Divider(),
           Text("목적지 : ${widget.destination}"),
           Divider(),
