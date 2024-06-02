@@ -520,7 +520,7 @@ app.get('/Calculate', VerifyJwtAccessToken, async function (req, res) {
       res.status(200).send({ "AccountName" : AccountName, "AccountNumber" : AccountNumber });
     } else {
       // 닉네임이 없다면 응답
-      res.status(201).send({ Available : true });
+      res.status(400).send({ error : "Error saving data" });
     }
 
   } catch (error) {
