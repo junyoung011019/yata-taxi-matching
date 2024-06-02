@@ -167,7 +167,8 @@ app.post('/SignUp', async (req, res) => {
           UserName: req.body.UserName,
           NickName: req.body.NickName,
           Phone: req.body.Phone,
-          AccountNumber: req.body.AccountNumber,
+          AccountName:req.body.AccountName,
+          AccountNumber: req.body.AccountNumber
       };
       console.log(req.body.Email+"의 회원가입 요청");
       await UserCollection.insertOne(user);
@@ -503,8 +504,35 @@ app.post('/Matching', VerifyJwtAccessToken, async function (req, res) {
   
 })
 
+//정산하기
+app.get('/Calculate', VerifyJwtAccessToken, async function (req, res) {
+  const userEmail=req.user.Email;
+  try {
+    await client.connect(); // MongoDB 클라이언트 연결
+    const database = client.db('YATA');
+    const collection = database.collection('User');
+
+    const result = await collection.findOne({ "Email" : userEmail });
+    const { AccountName, AccountNumber }=result;
+
+    if (result) {
+      // 닉네임이 있다면 응답
+      res.status(200).send({ "AccountName" : AccountName, "AccountNumber" : AccountNumber });
+    } else {
+      // 닉네임이 없다면 응답
+      res.status(201).send({ Available : true });
+    }
+
+  } catch (error) {
+    console.error("Error saving data:", error);
+    res.status(500).send("Error saving data");
+  } finally {
+    await client.close(); // MongoDB 클라이언트 연결 해제
+  }
+})
+
 //리프레시 토큰
-app.post('/Refresh', async(req,res)=>{
+app.post('/Refresh', async function (req,res){
   const {refreshToken} = req.body;
 
   if (!refreshToken){

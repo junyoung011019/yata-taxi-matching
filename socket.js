@@ -239,9 +239,6 @@ app.get('/ShowRecruiting', VerifyJwtAccessToken, async function (req, res) {
   }
 });
 
-//시간 순 함수
-
-//인원 순 함수
 
 //방향 확인 db에 불러오기
 app.post('/Matching', VerifyJwtAccessToken, async function (req, res) {
