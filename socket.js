@@ -213,59 +213,68 @@ const ShowDBList = async function(){
 }
 
 function mergeData(rooms, socket) {
-    return rooms.map(room => ({
-      "_id": room._id,
-      "roomTitle": room.roomTitle,
-      "destination": room.destination,
-      "startTime": room.startTime,
-      "CreationTime": room.CreationTime,
-      "RoomManager": room.RoomManager,
-      "MaxCount": socket[room._id].MaxCount,
-      "clients": socket[room._id].clients
-    }));
+  const RoomData=rooms.map(room => ({
+    "_id": room._id,
+    "roomTitle": room.roomTitle,
+    "destination": room.destination,
+    "startTime": room.startTime,
+    "CreationTime": room.CreationTime,
+    "RoomManager": room.RoomManager,
+    "MaxCount": socket[room._id].MaxCount,
+    "clients": socket[room._id].clients
+  }))
+  return RoomData;
+}
+
+//방 목록 보기
+app.get('/ShowRecruiting', VerifyJwtAccessToken, async function (req, res) {
+  try {    
+      const DBlist=await ShowDBList();
+      const LiveRoomData=mergeData(DBlist,channels);
+      res.status(200).json(LiveRoomData);
+      console.log("리스트 반환 성공");
+  } catch (error) {
+      console.error('Error fetching recruitment list:', error);
+      res.status(500).json(error);
   }
+});
+
+//시간 순 함수
+
+//인원 순 함수
 
 //방향 확인 db에 불러오기
 app.post('/Matching', VerifyJwtAccessToken, async function (req, res) {
     currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
     //db에서 정보 받아오기
-    const showList=await ShowDBList();
-    const DBlist = showList.map(({ _id, destination, CreationTime, startTime }) => ({
-        id: _id,
-        destination,
-        CreationTime,
-        startTime
-      }));
-    //소켓의 정보
-    //channels
+    const DBlist=await ShowDBList();
     const LiveRoomData=mergeData(DBlist,channels);
-    res.status(200).json(LiveRoomData);
-  })
-//시간 순 매칭
+    //요청에 방향, 시간/인원 매칭 받아야함
+    const { destination, matchingMethod } = req.body;
+    console.log(LiveRoomData);
+    //올바른 방향만 추출
+    console.log("방향"+destination);
 
-//인원 순 매칭
+    //시간일때 - LiveRoomData
+    if(matchingMethod==="HighestCount"){
+      console.log("인원 많은 순")
+    }else if(matchingMethod==="EarliestTime"){
+      console.log("시간 빠른순")
+
+    }
+   
+
+    
+    
+})
+
+
 
 
 //매칭해서 리턴 해줄때 모든 정보를 넘겨줘야함
 
-//방 목록 보기
-app.get('/ShowRecruiting', VerifyJwtAccessToken, async function (req, res) {
-    try {    
-        const DBlist=await ShowDBList();
-        const LiveRoomData=mergeData(DBlist,channels);
-        res.status(200).json(LiveRoomData);
-        console.log("리스트 반환 성공");
-    } catch (error) {
-        console.error('Error fetching recruitment list:', error);
-        res.status(500).json(error);
-    }
-});
 
 
-app.get('/', function (req, res) {
-    console.log(channels);
-    res.status(200).json(channels);
-});
 
 
 httpsServer.listen(443, () => {

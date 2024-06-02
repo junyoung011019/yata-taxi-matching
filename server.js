@@ -369,16 +369,17 @@ const ShowDBList = async function(){
 }
 
 function mergeData(rooms, socket) {
-  return rooms.map(room => ({
-    "_id": room._id,
+  const RoomData=rooms.map(room => ({
+    "id": room._id,
     "roomTitle": room.roomTitle,
     "destination": room.destination,
     "startTime": room.startTime,
     "CreationTime": room.CreationTime,
     "RoomManager": room.RoomManager,
     "MaxCount": socket[room._id].MaxCount,
-    "HeadCount": socket[room._id].clients
-  }));
+    "clients": socket[room._id].clients
+  }))
+  return RoomData;
 }
 
 //방 목록 보기
@@ -386,6 +387,7 @@ app.get('/ShowRecruiting', VerifyJwtAccessToken, async function (req, res) {
   try {    
       const DBlist=await ShowDBList();
       const LiveRoomData=mergeData(DBlist,channels);
+      console.log(LiveRoomData);
       res.status(200).json(LiveRoomData);
       console.log("리스트 반환 성공");
   } catch (error) {
@@ -393,6 +395,113 @@ app.get('/ShowRecruiting', VerifyJwtAccessToken, async function (req, res) {
       res.status(500).json(error);
   }
 });
+
+//시간에 따른 매칭
+async function findFastestAvailableRoom(rooms) {
+  let fastRoom=null;
+  let highestPriority=0;
+  currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
+  for(const room of rooms){
+    console.log(currentTime);
+    let Priority=0;
+    const newCreationTime=new Date(room.CreationTime);
+    const newCurrentTime=new Date(currentTime);
+    const newStartTime=room.startTime*60000;
+    console.log(room.id+"의 (시간순) 우선 순위 계산")
+    //출발 예정 시간
+    const targetTime=new Date(newCreationTime.getTime()+newStartTime);
+    console.log("현재 시간" +newCurrentTime);
+    console.log("방 생성 시간"+newCreationTime);
+    console.log("출발 예정 시간"+targetTime);
+    //출발 까지 남은 시간
+    const remainingTime=targetTime-newCurrentTime;
+    console.log("출발까지 남은 시간 "+remainingTime);
+    //예정 시간이 지났을 경우
+    if(remainingTime<0||remainingTime==0){
+      Priority=1;
+    }else{
+      //출발까지 남은 시간이 적을수록 우선순위 높음
+
+      //출발 예상시간 - 모임 생성 시간 /현재시간 - 모임 생성 시간
+      Priority=(newCurrentTime-newCreationTime)/(targetTime-newCreationTime);
+    }
+    console.log("남은 시간에 따른 우선순위"+Priority);
+    //방이 오래전에 생성될 수록 우선순위 높여줌
+    Priority+=0.4*(1/(newCurrentTime-newCreationTime));
+    console.log(room.id+"의 최종 우선 순위 "+ Priority);
+    if(highestPriority<Priority){
+      highestPriority=Priority;
+      fastRoom=room;
+    }
+  }
+
+  if(fastRoom===null){
+    return null;
+  }
+  const fastRoomId=fastRoom.id;
+  return fastRoomId;
+}
+
+//인원수에 따른 매칭
+async function findLargestAvailableRoom(rooms){
+  let fullRoom=null;
+  let highestPriority=0;
+  currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
+  
+  for(const room of rooms){
+    let Priority=0;
+    const newCreationTime=new Date(room.CreationTime);
+    const newCurrentTime=new Date(currentTime);
+    memberRatio=room.clients/room.MaxCount;
+    console.log(room.id+"의 (인원수 비율) 우선 순위 계산")
+    console.log("인원이 얼마나 찼나요"+memberRatio);
+    Priority+=memberRatio*0.6;
+    //방이 오래전에 생성될 수록 우선순위 높여줌
+    Priority+=0.4*(1/(newCurrentTime-newCreationTime));
+    console.log(room.id+"의 최종 우선 순위 "+ Priority);
+    if(memberRatio==0){
+      Priority=0;
+    }
+
+    if(highestPriority<Priority){
+      highestPriority=Priority;
+      fullRoom=room;
+    }
+  }
+
+  if(fullRoom===null){
+    return null;
+  }
+  const fullRoomId=fullRoom.id;
+  return fullRoomId;
+}
+
+//매칭하기
+app.post('/Matching', VerifyJwtAccessToken, async function (req, res) {
+  //db에서 정보 받아오기
+  const DBlist=await ShowDBList();
+  const LiveRoomData=mergeData(DBlist,channels);
+  //요청에 방향, 시간/인원 매칭 받아야함
+  const { destination, matchingMethod } = req.body;
+  //올바른 방향만 추출
+  const filteredRooms = LiveRoomData.filter(LiveRoomData => LiveRoomData.destination === destination);
+  let matchingRoomId;
+
+  if(matchingMethod==="EarliestTime"){
+    matchingRoomId=await findFastestAvailableRoom(filteredRooms);
+  }else if(matchingMethod==="HighestCount"){
+    //인원일때 - LiveRoomData
+    matchingRoomId=await findLargestAvailableRoom(filteredRooms);
+  }
+ 
+  //널일때 걸러주기
+  if(matchingRoomId===null){
+    res.status(400).send('Miss Matching');
+  }else{
+    res.status(200).send(matchingRoomId);
+  }
+  
+})
 
 //리프레시 토큰
 app.post('/Refresh', async(req,res)=>{
