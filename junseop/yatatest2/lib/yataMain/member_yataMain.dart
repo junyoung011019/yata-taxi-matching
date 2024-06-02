@@ -223,7 +223,6 @@ class _Member_yataMainState extends State<Member_yataMain> {
                     .of(context)
                     .size
                     .height * 0.04),
-                ElevatedButton(onPressed: () {user.postAccess();} , child: Text("테스트토큰"))
               ],
             ),
           ),

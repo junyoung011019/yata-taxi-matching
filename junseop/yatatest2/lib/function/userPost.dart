@@ -1,3 +1,5 @@
+import 'dart:js_interop';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -18,32 +20,25 @@ class UserPost {
   final storage = new FlutterSecureStorage();
 
 
-  void postAccess() async {
+  Future<List<String>> post_account_data(BuildContext context) async {
     try {
-      String? accessToken = await storage.read(key: 'ACCESS_TOKEN');
-      print("accessToken 불러옴 $accessToken");
-      if (accessToken != null) {
-        final response = await Http.get(
-          Uri.parse(url + "/Protected"),
-          headers: <String, String>{
-            'Authorization': 'Bearer $accessToken',
-            // 'Content-Type': 'application/json',
-          },
-        );
-        if (response.statusCode == 401) {
-          final responseDataa = json.decode(response.body);
-          print("회원가입 post 요청 실패: ${response.body}");
-        }
-        final responseData = json.decode(response.body);
-        print("accessToken: ${responseData["accessToken"]}");
+      List<String> account = [];
+      var dio = await authDio(context);
+      final response = await dio.get(url + "/Calculate");
 
-
-      } else {
-        print('Access token is null.');
-        // 이 경우에 대한 처리를 추가하세요.
+      if(response.statusCode == 200){
+        print("계좌 요청 good");
+        final responseData = response.data;
+        account.add(responseData["AccountName"]);
+        account.add(responseData["AccountNumber"]);
+        return account;
       }
-    } catch (er) {
-      print('Error: $er');
+      else {
+        return [];
+      }
+    } catch (e) {
+      // 에러 처리를 위해 필요한 코드 작성
+      return []; // 예외 발생 시 빈 리스트 반환
     }
   }
 

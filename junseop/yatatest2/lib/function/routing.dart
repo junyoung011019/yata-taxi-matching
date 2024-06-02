@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:yatatest2/chatRoom.dart';
 import 'package:yatatest2/function/toastMessage.dart';
+import 'package:yatatest2/quickMatch_page.dart';
 import 'package:yatatest2/yataMain/member_yataMain.dart';
 import 'package:yatatest2/signup_page.dart';
 import '../logIn_page.dart';
@@ -129,6 +130,10 @@ void handleAction(BuildContext context, String action,
             );
           },
         );
+        break;
+      case "빠른매칭":
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => QuickMatch()));
         break;
       case "모집방":
         Navigator.push(context,
