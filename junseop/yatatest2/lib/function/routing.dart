@@ -24,7 +24,7 @@ void handleAction(BuildContext context, String action,
       String roomId = "",
       bool creation = true,
     }) {
-  if (!user_state.loginState) {
+
     switch (action) {
       case "로그인":
         Navigator.push(
@@ -37,29 +37,14 @@ void handleAction(BuildContext context, String action,
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => SignUp()));
         break;
-      case "모집하기":
-      case "모집방":
-      case "빠른매칭":
-      case "회원메인":
-      case "로그아웃":
-      case "채팅창바로가기":
-      case "모집하기1":
-      case "모집하기2":
-      case "모집하기3":
-        showSnackBar(context, "로그인 필요");
-        break;
-    }
 
-
-  }
-    if (user_state.loginState) {
-    switch (action) {
       case "메인":
         Navigator.push(context,
             MaterialPageRoute(
                 settings: RouteSettings(name: "ymain"),
                 builder: (context) => YataMain()));
         break;
+
       case "로그인 만료":
         showCupertinoDialog(
           context: context,
@@ -73,7 +58,6 @@ void handleAction(BuildContext context, String action,
                   onPressed: () {
                     Navigator.popUntil(context, ModalRoute.withName("memberMain"));
                     Navigator.pop(context);
-                    // Navigator.pop(context); // 대화 상자 닫기
                     // 로그인 페이지로 이동
                     Navigator.push(
                       context,
@@ -187,7 +171,6 @@ void handleAction(BuildContext context, String action,
         break;
 
     }
-  }
 
 
 }

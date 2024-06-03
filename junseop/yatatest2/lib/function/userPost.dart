@@ -20,7 +20,7 @@ class UserPost {
   final storage = new FlutterSecureStorage();
 
 
-  Future<List<String>> post_account_data(BuildContext context) async {
+  Future<List<String>> get_account_data(BuildContext context) async {
     try {
       List<String> account = [];
       var dio = await authDio(context);
@@ -29,8 +29,9 @@ class UserPost {
       if(response.statusCode == 200){
         print("계좌 요청 good");
         final responseData = response.data;
-        account.add(responseData["AccountName"]);
-        account.add(responseData["AccountNumber"]);
+        print("AccountName: ${responseData["AccountName"]}");
+        print("AccountNumber: ${responseData["AccountNumber"]}");
+        List<String> account = [responseData["AccountName"],responseData["AccountNumber"]];
         return account;
       }
       else {

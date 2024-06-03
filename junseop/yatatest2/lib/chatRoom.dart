@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:socket_io_client/socket_io_client.dart';
 import 'package:yatatest2/function/routing.dart';
 import 'package:yatatest2/function/socketService.dart';
 import 'package:yatatest2/function/userPost.dart';
@@ -47,6 +46,8 @@ class _ChatRoomState extends State<ChatRoom> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _headController = TextEditingController();
 
+
+
   UserPost user = new UserPost();
   late String accountName;
   late String accountNumber;
@@ -54,7 +55,7 @@ class _ChatRoomState extends State<ChatRoom> {
   void initState() {
     super.initState();
 
-    user.post_account_data(context);
+    fetchAccountData();
 
     decodedToken = JwtDecoder.decode(widget.accessToken);
     myNick = decodedToken["NickName"];
@@ -111,6 +112,15 @@ class _ChatRoomState extends State<ChatRoom> {
       }
     });
   }
+    void fetchAccountData() async {
+      List<String> account = await user.get_account_data(context);
+      if (account.isNotEmpty) {
+        setState(() {
+          accountName = account[0];
+          accountNumber = account[1];
+        });
+      }
+    }
 
   @override
   void dispose() {
@@ -169,9 +179,9 @@ class _ChatRoomState extends State<ChatRoom> {
       body: Column(
         children: [
           Text("참여 인원 : $headCount/${widget.MaxCount}"),
-          Divider(),
+          const Divider(),
           Text("목적지 : ${widget.destination}"),
-          Divider(),
+          const Divider(),
           Text("예상 출발 시간 : ${widget.startTime}분 후"),
           Expanded(
             child: ListView.builder(
@@ -198,6 +208,8 @@ class _ChatRoomState extends State<ChatRoom> {
                   onPressed:() {
                     _scrollToBottom();
                     _showSettlementForm();
+                    _bankController.text = accountName;
+                    _accountNumberController.text = accountNumber;
                   },
                   child: Text("정산하기"),
                 ),
@@ -236,7 +248,7 @@ class _ChatRoomState extends State<ChatRoom> {
                   ),
                   ElevatedButton(
                     onPressed: _submitSettlementForm,
-                    child: Text('제출하기'),
+                    child: Text('보내기'),
                   ),
                 ],
               ),
