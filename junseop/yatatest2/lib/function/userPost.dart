@@ -18,7 +18,6 @@ class UserPost {
 
   Future<List<String>> get_account_data(BuildContext context) async {
     try {
-      List<String> account = [];
       var dio = await authDio(context);
       final response = await dio.get(url + "/Calculate");
 
@@ -63,6 +62,10 @@ class UserPost {
         };
         print("roomDATA : $roomData");
         return roomData;
+      }
+      if(response.statusCode == 404) {
+        print("생성되어 있는 방이 없습니다.");
+        return null;
       }
     }
     catch(e) {

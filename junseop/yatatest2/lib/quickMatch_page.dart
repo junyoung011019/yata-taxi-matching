@@ -15,15 +15,21 @@ class _QuickMatchState extends State<QuickMatch> {
   String _selectedPriority2 = 'HighestCount';
   UserPost user = new UserPost();
   final storage = new FlutterSecureStorage();
+  bool roomIsEmpty = false;
   late Map<String, dynamic> roomData;
 
   Future<void> fetchRoomData(String destination, String matchingMethod) async {
     Map<String, dynamic>? fetchedRoomData = await user.post_matching_data(context, destination, matchingMethod);
-    if (fetchedRoomData != null) {
       setState(() {
-        roomData = fetchedRoomData;
+        print("불러온 방 정보: $fetchedRoomData");
+        if(fetchedRoomData == null) {
+          handleAction(context, "notRoom");
+        }
+        else {
+          roomData = fetchedRoomData;
+        }
+      print("불러온 roomData: $roomData");
       });
-    }
   }
 
   @override
@@ -142,8 +148,11 @@ class _QuickMatchState extends State<QuickMatch> {
                     print(_selectedPriority2);
                     await fetchRoomData(_selectedPriority1, _selectedPriority2);
                     print(roomData);
-                    print("룸 타이틀: ${roomData['roomTitle']}");
-                    handleAction(context, "채팅방",
+
+
+                      handleAction(
+                        context,
+                        "채팅방",
                         roomTitle: roomData['roomTitle'],
                         MaxCount: roomData['MaxCount'],
                         destination: roomData['destination'],
@@ -151,7 +160,9 @@ class _QuickMatchState extends State<QuickMatch> {
                         accessToken: accessToken,
                         roomId: roomData['roomId'],
                         creation: false,
-                        );
+                      );
+
+
                   },
                   child: Text('매칭시작'),
                 ),

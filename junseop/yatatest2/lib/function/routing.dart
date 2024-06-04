@@ -71,6 +71,28 @@ void handleAction(BuildContext context, String action,
           },
         );
         break;
+
+      case "notRoom":
+        print("빠른매칭에 방이 없어염");
+        showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              title: Text('생성된 방이 없습니다...'),
+              content: Text('잠시 후 다시 실행하거나\n방을 생성해주세요!'),
+              actions: [
+                CupertinoDialogAction(
+                  child: Text('확인'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            );
+          },
+        );
+        break;
+
       case "Channel is full":
         print("case문 Channel is full 호출");
         showCupertinoDialog(
