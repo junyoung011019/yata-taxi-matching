@@ -378,7 +378,7 @@ function mergeData(rooms, socket) {
     "CreationTime": room.CreationTime,
     "RoomManager": room.RoomManager,
     "MaxCount": socket[room._id].MaxCount,
-    "clients": socket[room._id].clients
+    "HeadCount": socket[room._id].clients
   }))
   return RoomData;
 }
@@ -477,6 +477,25 @@ async function findLargestAvailableRoom(rooms){
   return fullRoomId;
 }
 
+//방 정보 찾기
+async function roomInfoFind(roomId){
+  try {
+    await client.connect(); // MongoDB 클라이언트 연결
+    const database = client.db('YATA');
+    const collection = database.collection('Recruiting');
+
+    const result = await collection.findOne({ "_id" : roomId });
+
+    return result;
+
+  } catch (error) {
+    console.error("Error saving data:", error);
+    return error;
+  } finally {
+    await client.close(); // MongoDB 클라이언트 연결 해제
+  }
+}
+
 //매칭하기
 app.post('/Matching', VerifyJwtAccessToken, async function (req, res) {
   //db에서 정보 받아오기
@@ -494,12 +513,14 @@ app.post('/Matching', VerifyJwtAccessToken, async function (req, res) {
     //인원일때 - LiveRoomData
     matchingRoomId=await findLargestAvailableRoom(filteredRooms);
   }
- 
+
+  const RoomInfo=await roomInfoFind(matchingRoomId);
+  
   //널일때 걸러주기
-  if(matchingRoomId===null){
+  if(RoomInfo===null){
     res.status(400).send('Miss Matching');
   }else{
-    res.status(200).send(matchingRoomId);
+    res.status(200).send(RoomInfo);
   }
   
 })
