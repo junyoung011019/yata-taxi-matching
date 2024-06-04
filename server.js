@@ -224,7 +224,6 @@ app.post('/Recruiting', VerifyJwtAccessToken, async function (req, res) {
     const RecruitingsCollection = database.collection('Recruiting');
     const key=uuid4();
     req.body._id=key;
-    req.body.HeadCount=1;
     req.body.CreationTime=currentTime;
     req.body.RoomManager=NickName;
     
