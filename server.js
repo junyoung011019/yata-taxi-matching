@@ -453,8 +453,10 @@ async function findLargestAvailableRoom(rooms){
     let Priority=0;
     const newCreationTime=new Date(room.CreationTime);
     const newCurrentTime=new Date(currentTime);
-    memberRatio=room.clients/room.MaxCount;
-    console.log(room.id+"의 (인원수 비율) 우선 순위 계산")
+    memberRatio=room.HeadCount/room.MaxCount;
+    console.log(room.HeadCount);
+    console.log(room.MaxCount);
+    console.log(room.id+"의 (인원수 비율) 우선 순위 계산");
     console.log("인원이 얼마나 찼나요"+memberRatio);
     Priority+=memberRatio*0.6;
     //방이 오래전에 생성될 수록 우선순위 높여줌
