@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:yatatest2/chatRoom.dart';
-import 'package:yatatest2/function/toastMessage.dart';
 import 'package:yatatest2/quickMatch_page.dart';
 import 'package:yatatest2/yataMain/member_yataMain.dart';
 import 'package:yatatest2/signup_page.dart';
@@ -10,7 +9,6 @@ import '../recruiting/recruiting1_page.dart';
 import '../recruiting/recruiting2.dart';
 import '../recruiting/recruiting3.dart';
 import '../recruitmentRoom_page.dart';
-import '../struct/userState.dart';
 import '../yataMain/yataMain.dart';
 
 
@@ -161,7 +159,6 @@ void handleAction(BuildContext context, String action,
             MaterialPageRoute(builder: (context) => ChatRoom(
               roomTitle: roomTitle,
               MaxCount: MaxCount,
-              HeadCount: HeadCount,
               destination: destination,
               startTime: startTime,
               accessToken: accessToken,

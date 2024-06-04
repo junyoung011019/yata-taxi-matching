@@ -1,10 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:yatatest2/signup_page.dart';
 import 'package:yatatest2/struct/userState.dart';
 import '../function/toastMessage.dart';
-import '../function/userPost.dart';
 import '../function/routing.dart';
 class YataMain extends StatefulWidget {
   const YataMain({super.key});

@@ -1,15 +1,11 @@
-import 'dart:js_interop';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as Http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:yatatest2/function/routing.dart';
 import 'dart:convert';
 import 'auth_dio.dart';
-import 'package:yatatest2/struct/recruitRoomStruct.dart';
 
 class UserPost {
   String userPost = '.9';
@@ -40,6 +36,37 @@ class UserPost {
     } catch (e) {
       // 에러 처리를 위해 필요한 코드 작성
       return []; // 예외 발생 시 빈 리스트 반환
+    }
+  }
+  Future<Map<String, dynamic>?> post_matching_data(BuildContext context, String destination, String matchingMethod ) async {
+    try {
+      var dio = await authDio(context);
+
+      Map<String, dynamic> data = {
+        "destination" : destination,
+        "matchingMethod" : matchingMethod
+      };
+      final response = await dio.post(url + "/Matching", data: data);
+
+      if(response.statusCode == 200) {
+        print("매칭 200번이에영");
+        final responseData = response.data;
+        // print(responseData); //['matchingRoomId']
+        Map<String, dynamic> roomData = {
+          "roomId": responseData['_id'],
+          "roomTitle": responseData['roomTitle'],
+          "destination": responseData['destination'],
+          "startTime": responseData['startTime'],
+          "CreationTime": responseData['CreationTime'],
+          "RoomManager": responseData['RoomManager'],
+          "MaxCount": responseData['MaxCount'],
+        };
+        print("roomDATA : $roomData");
+        return roomData;
+      }
+    }
+    catch(e) {
+      return null;
     }
   }
 
@@ -123,7 +150,7 @@ class UserPost {
       return "";
     }
   }
-
+//모집방 리스트 요청
   Future <List<Map<String, dynamic>>> post_recruitmentRoomList_data(BuildContext context) async{
     try {
       var dio = await authDio(context);
@@ -135,7 +162,7 @@ class UserPost {
         print(response.data);
         List<Map<String, dynamic>> roomList = data.map((item) {
           return {
-            "roomId": item['_id'],
+            "roomId": item['id'],
             "roomTitle": item['roomTitle'],
             "destination": item['destination'],
             "startTime": item['startTime'],

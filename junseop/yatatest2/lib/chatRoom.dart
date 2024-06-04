@@ -7,7 +7,6 @@ import 'package:yatatest2/function/userPost.dart';
 class ChatRoom extends StatefulWidget {
   final String roomTitle;
   final int MaxCount;
-  final int HeadCount;
   final String destination;
   final int startTime;
   final String accessToken;
@@ -17,7 +16,6 @@ class ChatRoom extends StatefulWidget {
     super.key,
     required this.roomTitle,
     required this.MaxCount,
-    required this.HeadCount,
     required this.destination,
     required this.startTime,
     required this.accessToken,
@@ -56,11 +54,11 @@ class _ChatRoomState extends State<ChatRoom> {
     super.initState();
 
     fetchAccountData();
-
+    print("채팅방에서 받아온 엑세스 토큰: ${widget.accessToken}");
     decodedToken = JwtDecoder.decode(widget.accessToken);
     myNick = decodedToken["NickName"];
     print("내 닉네임: $myNick");
-    headCount = widget.HeadCount;
+    headCount = 1;
     socket = SocketService(widget.accessToken, widget.roomId, widget.creation, widget.MaxCount);
 
     socket.onMessage((data) {
@@ -162,7 +160,7 @@ class _ChatRoomState extends State<ChatRoom> {
     });
 
     // 데이터를 채팅 메시지로 보내기
-    socket.sendMessage(widget.roomId, '- 정산 정보 -\n은행: $bank\n계좌번호: $accountNumber\n비용: ${int.parse(amount) / int.parse(head)}');
+    socket.sendMessage(widget.roomId, '- 정산 정보 -\n은행: $bank\n계좌번호: $accountNumber\n비용: ${(int.parse(amount) / int.parse(head)).ceil()}');
   }
 
   @override
