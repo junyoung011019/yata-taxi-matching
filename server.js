@@ -447,7 +447,8 @@ async function findLargestAvailableRoom(rooms){
   let fullRoom=null;
   let highestPriority=0;
   currentTime=moment().format('YYYY-MM-DD HH:mm:ss');
-  
+  console.log("인원수매칭입니다");
+
   for(const room of rooms){
     let Priority=0;
     const newCreationTime=new Date(room.CreationTime);
@@ -515,9 +516,9 @@ app.post('/Matching', VerifyJwtAccessToken, async function (req, res) {
 
   const RoomInfo=await roomInfoFind(matchingRoomId);
   
-  //널일때 걸러주기
-  if(RoomInfo===null){
-    res.status(400).send('Miss Matching');
+  //방이 없을때
+  if(matchingRoomId==null){
+    res.status(404).send('No Room');
   }else{
     res.status(200).send(RoomInfo);
   }
@@ -575,7 +576,7 @@ app.post('/Refresh', async function (req,res){
       }else{
           if (await bcrypt.compare(refreshToken,HashedKey.hashedToken)) {
               const accessToken = jwt.sign({ Email: Email, iss:"YATA", roles:"user", keyName:"refresh" }, AccessKey, { expiresIn: '2m' });
-              res.json({ accessToken });
+              res.status(200).json({ accessToken });
           }
       }
 
