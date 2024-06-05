@@ -15,6 +15,7 @@ class SignUp extends StatefulWidget {
 class _SignUpState extends State<SignUp> {
   bool _nickPressed = false; // 닉네임 중복 색깔
   bool _emailPressed = false;
+  bool _isButtonDisabled = false;
   final _emailcode = TextEditingController();
   final List<String> _bankList = <String>["국민", "우리", "카카오뱅크", "신한", "선샤인"];
   String _selectbank = "";
@@ -174,7 +175,7 @@ class _SignUpState extends State<SignUp> {
                       ),
                       SizedBox(width: 10),
                       ElevatedButton(
-                        onPressed: () async {
+                        onPressed: _emailPressed ? null : () async {
                           if (_emailcode.text == "") {
                             showSnackBar(context, "인증번호를 입력하세요");
                             setState(() {
@@ -193,6 +194,7 @@ class _SignUpState extends State<SignUp> {
                             } else {
                               setState(() {
                                 _emailPressed = true;
+                                // _isButtonDisabled = true;
                                 showToast("인증 성공!");
                               });
                             }

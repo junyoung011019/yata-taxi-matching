@@ -22,15 +22,14 @@ class _Recruiting3State extends State<Recruiting3> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(
+        centerTitle: true,
+        title: Text(
             '모집 확인', // 중앙에 표시할 텍스트
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
-        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back), // 뒤로가기 아이콘
           onPressed: () {

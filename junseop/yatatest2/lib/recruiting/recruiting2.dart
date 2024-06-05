@@ -23,7 +23,7 @@ class _Recruiting2State extends State<Recruiting2> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('모집하기2'),
+        title: const Text('모집하기'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {

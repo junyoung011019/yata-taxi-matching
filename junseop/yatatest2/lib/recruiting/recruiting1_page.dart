@@ -19,7 +19,7 @@ class _Recruiting1State extends State<Recruiting1> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('모집하기1'),
+        title: const Text('모집하기'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () { Navigator.pop(context); },

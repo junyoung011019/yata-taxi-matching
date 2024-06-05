@@ -194,15 +194,15 @@ class _YataMainState extends State<YataMain> {
                   ],
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.04),
-                TextButton(onPressed: () async {
-                  final storage = new FlutterSecureStorage();
-                  final accessToken = await storage.read(key: 'ACCESS_TOKEN');
-                  final refreshToken = await storage.read(key: 'REFRESH_TOKEN');
-                  print('ACCESS_TOKEN: $accessToken');
-                  print('REFRESH_TOKEN: $refreshToken');
-                  user_state.set_loginState(true);
-                  handleAction(context, "회원메인");
-                }, child: Text("로그인해버리기"))
+                // TextButton(onPressed: () async {
+                //   final storage = new FlutterSecureStorage();
+                //   final accessToken = await storage.read(key: 'ACCESS_TOKEN');
+                //   final refreshToken = await storage.read(key: 'REFRESH_TOKEN');
+                //   print('ACCESS_TOKEN: $accessToken');
+                //   print('REFRESH_TOKEN: $refreshToken');
+                //   user_state.set_loginState(true);
+                //   handleAction(context, "회원메인");
+                // }, child: Text("로그인해버리기"))
               ],
             ),
           ),

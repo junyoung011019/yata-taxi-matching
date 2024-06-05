@@ -4,6 +4,8 @@ import 'package:yatatest2/function/routing.dart';
 import 'package:yatatest2/function/socketService.dart';
 import 'package:yatatest2/function/userPost.dart';
 
+import 'function/deepLink.dart';
+
 class ChatRoom extends StatefulWidget {
   final String roomTitle;
   final int MaxCount;
@@ -197,6 +199,7 @@ class _ChatRoomState extends State<ChatRoom> {
                 ElevatedButton(
                   onPressed: () {
                     // 택시 호출하기 기능 구현
+                    launchKakaoTApp();
                     _scrollToBottom();
                     print("택시 호출하기 버튼 클릭");
                   },

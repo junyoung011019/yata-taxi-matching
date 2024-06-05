@@ -18,10 +18,11 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatelessWidget {
   // 목적지 좌표
-  final String latitude = "36.9101074813647";
-  final String longitude = "127.14283290030318";
+
 
   void _launchKakaoTApp() async {
+    final String latitude = "36.9101074813647";
+    final String longitude = "127.14283290030318";
     bool isKakaoTInstalled = await DeviceApps.isAppInstalled('com.kakao.taxi');
 
     if (isKakaoTInstalled) {
