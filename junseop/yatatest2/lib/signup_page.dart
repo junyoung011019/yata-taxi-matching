@@ -17,8 +17,8 @@ class _SignUpState extends State<SignUp> {
   bool _emailPressed = false;
   bool _isButtonDisabled = false;
   final _emailcode = TextEditingController();
-  final List<String> _bankList = <String>["국민", "우리", "카카오뱅크", "신한", "선샤인"];
-  String _selectbank = "";
+  final List<String> _bankList = <String>["국민", "우리", "하나", "카카오뱅크", "신한", "기업", "농협"];
+  String _selectbank = "국민";
   final List<TextEditingController> _textControllers =
   List.generate(7, (index) => TextEditingController());
   UserPost user = UserPost();
@@ -26,9 +26,8 @@ class _SignUpState extends State<SignUp> {
 
   void initState() {
     super.initState();
-    setState(() {
-      _selectbank = _bankList[0];
-    });
+    _selectbank = _bankList[0];
+    _textControllers[6].text = _selectbank;
   }
 
   @override
@@ -194,22 +193,31 @@ class _SignUpState extends State<SignUp> {
                             } else {
                               setState(() {
                                 _emailPressed = true;
-                                // _isButtonDisabled = true;
                                 showToast("인증 성공!");
                               });
                             }
                           }
                         },
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: _emailPressed ? Color(0xFFFAD232) : Colors.grey, // 글자색 조정
-                          padding: EdgeInsets.symmetric(
-                            vertical: 20, // 세로 길이 조정
-                            horizontal: 20, // 가로 길이 조정
+                        style: ButtonStyle(
+                          foregroundColor: WidgetStateProperty.all<Color>(Colors.white), // 글자색
+                          backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                                (Set<WidgetState> states) {
+                              if (states.contains(WidgetState.disabled)) {
+                                return Color(0xFFFAD232); // 버튼이 비활성화될 때 오렌지색
+                              }
+                              return Colors.grey; // 기본 배경색 (활성화 상태)
+                            },
+                          ),
+                          padding: WidgetStateProperty.all<EdgeInsets>(
+                            EdgeInsets.symmetric(
+                              vertical: 20, // 세로 길이
+                              horizontal: 20, // 가로 길이
+                            ),
                           ),
                         ),
                         child: Text('인증확인'),
                       ),
+
                       SizedBox(width: 25), // 오른쪽 마진 추가
                     ],
                   ),
@@ -408,9 +416,13 @@ class _SignUpState extends State<SignUp> {
                             ))
                                 .toList(),
                             onChanged: (value) {
-                              setState(() {
-                                _textControllers[6].text = _selectbank = value!;
-                              });
+                              if (value != null) {
+                                setState(() {
+                                  _selectbank = value;
+                                  print("선택한 은행 : $_selectbank");
+                                  _textControllers[6].text = _selectbank;
+                                });
+                              }
                             },
                             // 드롭다운 버튼 테마 설정
                             decoration: InputDecoration(

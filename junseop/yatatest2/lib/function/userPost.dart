@@ -83,7 +83,7 @@ class UserPost {
         "NickName": user[3],
         "Phone": user[4],
         "AccountNumber": user[5],
-        "Bank": user[6],
+        "AccountName": user[6],
       });
       print("회원가입 post 요청 ");
 
