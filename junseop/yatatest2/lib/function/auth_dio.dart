@@ -20,7 +20,6 @@ Future<Dio> authDio(BuildContext context) async {
 
     // 기기에 저장된 AccessToken 로드
     final accessToken = await storage.read(key: 'ACCESS_TOKEN');
-    print("DIO 실행 됨");
     // 매 요청마다 헤더에 AccessToken을 포함
     options.headers['authorization'] = 'Bearer $accessToken';
     return handler.next(options);
@@ -28,7 +27,6 @@ Future<Dio> authDio(BuildContext context) async {
 
     // 인증 오류가 발생했을 경우: AccessToken의 만료
     if (error.response?.statusCode == 401) {
-      print("Access토큰 만료");
       // 기기에 저장된 AccessToken과 RefreshToken 로드
       final accessToken = await storage.read(key: 'ACCESS_TOKEN');
       final refreshToken = await storage.read(key: 'REFRESH_TOKEN');

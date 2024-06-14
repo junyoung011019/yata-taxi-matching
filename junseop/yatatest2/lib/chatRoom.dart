@@ -56,15 +56,12 @@ class _ChatRoomState extends State<ChatRoom> {
     super.initState();
 
     fetchAccountData();
-    print("채팅방에서 받아온 엑세스 토큰: ${widget.accessToken}");
     decodedToken = JwtDecoder.decode(widget.accessToken);
     myNick = decodedToken["NickName"];
-    print("내 닉네임: $myNick");
     headCount = 1;
     socket = SocketService(widget.accessToken, widget.roomId, widget.creation, widget.MaxCount);
 
     socket.onMessage((data) {
-      print("메시지 수신: $data");
       if (mounted) {
         setState(() {
           messages.add(data);
@@ -77,7 +74,6 @@ class _ChatRoomState extends State<ChatRoom> {
       if (mounted) {
         setState(() {
           headCount = data['headCount'];
-          print("현재 인원은? -> $headCount");
         });
       }
     });
@@ -85,7 +81,6 @@ class _ChatRoomState extends State<ChatRoom> {
     socket.onError((data) {
       if (mounted) {
         setState(() {
-          print(data);
           if (data['message'] == "Channel is full") handleAction(context, "Channel is full");
           if (data['message'] == "Channel does not exist") handleAction(context, "Channel does not exist");
         });
@@ -95,7 +90,6 @@ class _ChatRoomState extends State<ChatRoom> {
 
   void sendMessage() {
     if (_controller.text.isNotEmpty) {
-      print("sendMessage호출!!!!");
       socket.sendMessage(widget.roomId, _controller.text);
       _controller.clear();
     }
@@ -150,7 +144,6 @@ class _ChatRoomState extends State<ChatRoom> {
     String amount = _amountController.text;
     String head = _headController.text;
 
-    print("은행: $bank, 계좌번호: $accountNumber, 비용: $amount");
 
     // 제출 후 폼을 숨깁니다.
     setState(() {
@@ -201,7 +194,6 @@ class _ChatRoomState extends State<ChatRoom> {
                     // 택시 호출하기 기능 구현
                     launchKakaoTApp();
                     _scrollToBottom();
-                    print("택시 호출하기 버튼 클릭");
                   },
                   child: Text("택시 호출하기"),
                 ),

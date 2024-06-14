@@ -27,7 +27,6 @@ class _Recruiting1State extends State<Recruiting1> {
       ),
       body: GestureDetector(
         onTap: () {
-          print('로그인 후 메인화면');
           FocusScope.of(context).unfocus();
         },
         child: SingleChildScrollView(
@@ -118,7 +117,6 @@ class _Recruiting1State extends State<Recruiting1> {
                           setState(() {
                             selectedButtonIndex = 0; // 2명 버튼이 선택됨
                           });
-                          print('2명 선택');
                         },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.black,
@@ -146,7 +144,6 @@ class _Recruiting1State extends State<Recruiting1> {
                           setState(() {
                             selectedButtonIndex = 1; // 3명 버튼이 선택됨
                           });
-                          print('3명 선택');
                         },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.black,
@@ -174,7 +171,6 @@ class _Recruiting1State extends State<Recruiting1> {
                           setState(() {
                             selectedButtonIndex = 2; // 4명 버튼이 선택됨
                           });
-                          print('4명 선택');
                         },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.black,
@@ -233,7 +229,6 @@ class _Recruiting1State extends State<Recruiting1> {
                         onPressed: () {
                           // 취소 버튼이 눌렸을 때 동작
                           Navigator.pop(context);
-                          print('취소');
                         },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Color(0xFF666666),

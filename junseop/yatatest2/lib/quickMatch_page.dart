@@ -21,14 +21,12 @@ class _QuickMatchState extends State<QuickMatch> {
   Future<void> fetchRoomData(String destination, String matchingMethod) async {
     Map<String, dynamic>? fetchedRoomData = await user.post_matching_data(context, destination, matchingMethod);
       setState(() {
-        print("불러온 방 정보: $fetchedRoomData");
         if(fetchedRoomData == null) {
           handleAction(context, "notRoom");
         }
         else {
           roomData = fetchedRoomData;
         }
-      print("불러온 roomData: $roomData");
       });
   }
 
@@ -75,7 +73,6 @@ class _QuickMatchState extends State<QuickMatch> {
                       setState(() {
                         _selectedPriority1 = '학교'; // 성환역 -> 남서울대학교 버튼이 눌렸을 때 다른 버튼 색상 초기화
                       });
-                      print('성환역 -> 남서울대학교');
                     },
                     icon: Icon(Icons.local_taxi),
                     label: Text('성환역 -> 남서울대학교'),
@@ -89,7 +86,6 @@ class _QuickMatchState extends State<QuickMatch> {
                       setState(() {
                         _selectedPriority1 = '성환역'; // 남서울대학교 -> 성환역 버튼이 눌렸을 때 다른 버튼 색상 초기화
                       });
-                      print('남서울대학교 -> 성환역');
                     },
                     icon: Icon(Icons.local_taxi),
                     label: Text('남서울대학교 -> 성환역'),
@@ -111,7 +107,6 @@ class _QuickMatchState extends State<QuickMatch> {
                       setState(() {
                         _selectedPriority2 = 'HighestCount'; // 인원 우선 버튼이 눌렸을 때 다른 버튼 색상 초기화
                       });
-                      print('인원 우선');
                     },
                     icon: Icon(Icons.people),
                     label: Text('인원 우선'),
@@ -125,7 +120,6 @@ class _QuickMatchState extends State<QuickMatch> {
                       setState(() {
                         _selectedPriority2 = 'EarliestTime'; // 시간 우선 버튼이 눌렸을 때 다른 버튼 색상 초기화
                       });
-                      print('시간 우선');
                     },
                     icon: Icon(Icons.access_time),
                     label: Text('시간 우선'),
@@ -143,11 +137,7 @@ class _QuickMatchState extends State<QuickMatch> {
                   onPressed: () async {
                     String? accessToken = await storage.read(key: 'ACCESS_TOKEN');
                     if(accessToken == null) accessToken = '';
-                    print('매칭시작');
-                    print(_selectedPriority1);
-                    print(_selectedPriority2);
                     await fetchRoomData(_selectedPriority1, _selectedPriority2);
-                    print(roomData);
 
 
                       handleAction(
@@ -169,7 +159,6 @@ class _QuickMatchState extends State<QuickMatch> {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    print('취소');
                   },
                   child: Text('취소'),
                 ),

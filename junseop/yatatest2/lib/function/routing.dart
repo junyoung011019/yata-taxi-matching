@@ -94,7 +94,6 @@ void handleAction(BuildContext context, String action,
         break;
 
       case "Channel is full":
-        print("case문 Channel is full 호출");
         showCupertinoDialog(
           context: context,
           builder: (BuildContext context) {
@@ -115,7 +114,6 @@ void handleAction(BuildContext context, String action,
         );
         break;
         case "Channel does not exist":
-          print("case문 Channel does not exist 호출");
         showCupertinoDialog(
           context: context,
           builder: (BuildContext context) {
@@ -149,10 +147,6 @@ void handleAction(BuildContext context, String action,
                 settings: RouteSettings(name: "memberMain"),
                 builder: (context) => Member_yataMain()));
         break;
-      // case "채팅창바로가기":
-      //   Navigator.push(context,
-      //       MaterialPageRoute(builder: (context) => Member_yataMain()));
-      //   break;
       case "로그아웃":
         Navigator.pop(context);
         break;

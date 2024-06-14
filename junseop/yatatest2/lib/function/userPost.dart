@@ -22,10 +22,7 @@ class UserPost {
       final response = await dio.get(url + "/Calculate");
 
       if(response.statusCode == 200){
-        print("계좌 요청 good");
         final responseData = response.data;
-        print("AccountName: ${responseData["AccountName"]}");
-        print("AccountNumber: ${responseData["AccountNumber"]}");
         List<String> account = [responseData["AccountName"],responseData["AccountNumber"]];
         return account;
       }
@@ -48,9 +45,7 @@ class UserPost {
       final response = await dio.post(url + "/Matching", data: data);
 
       if(response.statusCode == 200) {
-        print("매칭 200번이에영");
         final responseData = response.data;
-        // print(responseData); //['matchingRoomId']
         Map<String, dynamic> roomData = {
           "roomId": responseData['_id'],
           "roomTitle": responseData['roomTitle'],
@@ -60,11 +55,9 @@ class UserPost {
           "RoomManager": responseData['RoomManager'],
           "MaxCount": responseData['MaxCount'],
         };
-        print("roomDATA : $roomData");
         return roomData;
       }
       if(response.statusCode == 404) {
-        print("생성되어 있는 방이 없습니다.");
         return null;
       }
     }
@@ -85,14 +78,9 @@ class UserPost {
         "AccountNumber": user[5],
         "AccountName": user[6],
       });
-      print("회원가입 post 요청 ");
 
       if(response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        print("회원가입 post 요청결과: ");
-        print(responseData['success']);
-        print("accessToken: ${responseData["accessToken"]}");
-        print("accessToken: ${responseData["refreshToken"]}");
         await storage.write(key: 'ACCESS_TOKEN', value: responseData['accessToken']);
         await storage.write(key: 'REFRESH_TOKEN', value: responseData['refreshToken']);
       }
@@ -110,8 +98,6 @@ class UserPost {
 
       if(response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        print("로그인 post 요청결과: ");
-        print(responseData['success']);
 
         await storage.write(key: 'ACCESS_TOKEN', value: responseData['accessToken']);
         await storage.write(key: 'REFRESH_TOKEN', value: responseData['refreshToken']);
@@ -135,12 +121,9 @@ class UserPost {
 
       final response = await dio.post(url + "/Recruiting", data: data);
 
-      print("모집하기 post 요청: $response");
       if(response.statusCode == 200) {
         final responseData = response.data;
         // responseData['roomNum'];
-        print(responseData['roomId']);
-        print("모집하기 post 요청성공");
         return responseData['roomId'];
       } else {
         return "";
@@ -158,11 +141,8 @@ class UserPost {
     try {
       var dio = await authDio(context);
       final response = await dio.get(url + "/ShowRecruiting");
-      print("방 리스트 상태코드 : ${response.statusCode}");
       if (response.statusCode == 200) {
-        print("상태코드 200");
         List<dynamic> data = response.data;
-        print(response.data);
         List<Map<String, dynamic>> roomList = data.map((item) {
           return {
             "roomId": item['id'],
@@ -177,7 +157,6 @@ class UserPost {
         }).toList();
         return roomList;
       } else {
-        print("모집방 리스트 가져오기 실패: ${response.statusCode} ${response.data}");
         return [];
       }
     }catch(e) {
@@ -189,14 +168,12 @@ class UserPost {
             duration: Duration(seconds: 3),
           ));
         } else {
-          print("Dio 오류: ${e.message}");
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("요청 중 오류가 발생했습니다: ${e.message}"),
             duration: Duration(seconds: 3),
           ));
         }
       } else {
-        print("기타 오류: $e");
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("알 수 없는 오류가 발생했습니다."),
           duration: Duration(seconds: 3),
@@ -213,9 +190,6 @@ class UserPost {
       });
       if(response.statusCode == 201) {
         final responseData = json.decode(response.body);
-        print(response.statusCode);
-        print("닉네임 사용가능: ");
-        print(responseData["Available"]);
         return responseData["Available"];
       }
       else return false;
@@ -237,7 +211,6 @@ class UserPost {
             //Add any other data you want to send in the body
           })
       );
-      print(response.body);
       final responseData = json.decode(response.body);
       bool success = responseData['success'];
       return success;
@@ -258,7 +231,6 @@ class UserPost {
           //Add any other data you want to send in the body
         }),
       );
-      print(response.body);
     } catch(e) {}
   }
 //학교인증 초기화
@@ -273,7 +245,6 @@ class UserPost {
           //Add any other data you want to send in the body
         }),
       );
-      print(response.body);
     } catch(e) {}
   }
 

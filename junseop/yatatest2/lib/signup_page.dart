@@ -15,7 +15,6 @@ class SignUp extends StatefulWidget {
 class _SignUpState extends State<SignUp> {
   bool _nickPressed = false; // 닉네임 중복 색깔
   bool _emailPressed = false;
-  bool _isButtonDisabled = false;
   final _emailcode = TextEditingController();
   final List<String> _bankList = <String>["국민", "우리", "하나", "카카오뱅크", "신한", "기업", "농협"];
   String _selectbank = "국민";
@@ -184,7 +183,6 @@ class _SignUpState extends State<SignUp> {
                             user_state.email_check = await user.univ_email_check(
                                 _textControllers[0].text,
                                 int.parse(_emailcode.text));
-                            print(user_state.email_check);
                             if (!user_state.email_check) {
                               showSnackBar(context, "인증번호가 틀렸습니다");
                               setState(() {
@@ -294,7 +292,6 @@ class _SignUpState extends State<SignUp> {
                           } else {
                             user_state.nick_available = await user
                                 .nickName_check(_textControllers[3].text);
-                            print(user_state.nick_available);
                             if (!user_state.nick_available) {
                               showSnackBar(context, '닉네임이 중복되었습니다.');
                               setState(() {
@@ -419,7 +416,6 @@ class _SignUpState extends State<SignUp> {
                               if (value != null) {
                                 setState(() {
                                   _selectbank = value;
-                                  print("선택한 은행 : $_selectbank");
                                   _textControllers[6].text = _selectbank;
                                 });
                               }
@@ -492,7 +488,6 @@ class _SignUpState extends State<SignUp> {
                         if (user_state.nick_available && user_state.email_check) {
                           for (int i = 0; i < _textControllers.length; i++) {
                             userInfo.add(_textControllers[i].text);
-                            print(userInfo[i]);
                           }
                           user.post_signUp_data(userInfo);
                           user_state.set_loginState(true);
@@ -535,27 +530,3 @@ class _SignUpState extends State<SignUp> {
     );
   }
 }
-
-//async {
-//               if(_emailcode.text == "") {
-//                 showSnackBar(context, "인증번호를 입력하세요");
-//                 setState(() {
-//                   _emailPressed = false;
-//                 });
-//               }
-//               else {
-//                 user_state.email_check = await user.univ_email_check(_textControllers[0].text, int.parse(_emailcode.text));
-//                 print(user_state.email_check);
-//                 if (!user_state.email_check) {
-//                   showSnackBar(context, "인증번호가 틀렸습니다");
-//                   setState(() {
-//                     _emailPressed = false;
-//                   });
-//                 }
-//                 else {
-//                   setState(() {
-//                   _emailPressed = true;
-//                   showToast("인증 성공!");
-//                 });}
-//               }
-//             },

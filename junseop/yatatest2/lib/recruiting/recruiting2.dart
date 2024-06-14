@@ -33,7 +33,6 @@ class _Recruiting2State extends State<Recruiting2> {
       ),
       body: GestureDetector(
         onTap: () {
-          print('모집하기2 화면');
         },
         child: Container(
           width: MediaQuery.of(context).size.width,
@@ -92,7 +91,6 @@ class _Recruiting2State extends State<Recruiting2> {
                         setState(() {
                           selectedRouteButtonIndex = 0;
                         });
-                        print('성환역 -> 남서울대학교 버튼 선택');
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.black,
@@ -121,7 +119,6 @@ class _Recruiting2State extends State<Recruiting2> {
                         setState(() {
                           selectedRouteButtonIndex = 1;
                         });
-                        print('남서울대학교 -> 성환역 버튼 선택');
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.black,
@@ -169,7 +166,6 @@ class _Recruiting2State extends State<Recruiting2> {
                         setState(() {
                           selectedTimeButtonIndex = 0;
                         });
-                        print('5분 후 선택');
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.black,
@@ -197,7 +193,6 @@ class _Recruiting2State extends State<Recruiting2> {
                         setState(() {
                           selectedTimeButtonIndex = 1;
                         });
-                        print('10분 후 선택');
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.black,
@@ -225,7 +220,6 @@ class _Recruiting2State extends State<Recruiting2> {
                         setState(() {
                           selectedTimeButtonIndex = 2;
                         });
-                        print('15분 후 선택');
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.black,
@@ -259,7 +253,6 @@ class _Recruiting2State extends State<Recruiting2> {
                         setState(() {
                           selectedTimeButtonIndex = 3;
                         });
-                        print('20분 후 선택');
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.black,
@@ -287,7 +280,6 @@ class _Recruiting2State extends State<Recruiting2> {
                         setState(() {
                           selectedTimeButtonIndex = 4;
                         });
-                        print('25분 후 선택');
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.black,
@@ -315,7 +307,6 @@ class _Recruiting2State extends State<Recruiting2> {
                         setState(() {
                           selectedTimeButtonIndex = 5;
                         });
-                        print('30분 후 선택');
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.black,
@@ -375,7 +366,6 @@ class _Recruiting2State extends State<Recruiting2> {
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        print('취소');
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Color(0xFF666666),

@@ -24,7 +24,6 @@ class _LogInState extends State<LogIn> {
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
-          print('로그인 후 메인화면');
         },
         child: Container(
           width: MediaQuery.of(context).size.width,
@@ -116,16 +115,10 @@ class _LogInState extends State<LogIn> {
                     child: ElevatedButton(
                       onPressed: () async {
                         FocusScope.of(context).unfocus(); //키보드 내리기
-                        print('로그인');
                         userInfo[0] = _textControllers[0].text;
                         userInfo[1] = _textControllers[1].text;
                         bool logIn = await user.post_logIn_data(userInfo);
                         if(logIn) {
-                          String? accessToken = await storage.read(key: 'ACCESS_TOKEN');
-                          String? refreshToken = await storage.read(key: 'REFRESH_TOKEN');
-                          print('ACCESS_TOKEN: $accessToken');
-                          print('REFRESH_TOKEN: $refreshToken');
-
                           user_state.set_loginState(true);
                           Navigator.pop(context);
                           handleAction(context,"회원메인");
@@ -153,7 +146,6 @@ class _LogInState extends State<LogIn> {
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        print('이전');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white70, // #765039 색상 지정

@@ -102,10 +102,10 @@ class _RecruitmentRoomState extends State<RecruitmentRoom> with RouteAware {
                   },
                 ),
               ),
-              ElevatedButton(
-                child: Text("이메일 인증 초기화"),
-                onPressed: () { user.univ_init(); },
-              ),
+              // ElevatedButton(
+              //   child: Text("이메일 인증 초기화"),
+              //   onPressed: () { user.univ_init(); },
+              // ),
             ],
           ),
         ),

@@ -17,7 +17,6 @@ class _YataMainState extends State<YataMain> {
     return Scaffold(
       body: GestureDetector(
         onTap: () {
-          print('로그인 후 메인화면');
         },
         child: Container(
           width: MediaQuery.of(context).size.width,

@@ -169,10 +169,8 @@ class _Recruiting3State extends State<Recruiting3> {
                           widget.destination,
                           widget.startTime
                       );
-                      print("모집하기(방생성) 요청시 roomId: $roomId");
                       if(roomId.isNotEmpty){
                         String? accessToken = await storage.read(key: 'ACCESS_TOKEN');
-                        print("모집하기(방생성) 요청시 roomId: $accessToken");
                         if(accessToken == null) accessToken = '';
 
                         Navigator.popUntil(context, ModalRoute.withName("memberMain"));
@@ -190,7 +188,6 @@ class _Recruiting3State extends State<Recruiting3> {
 
                       }
                       else showToast("방만들기 실패 !");
-                      print('확인 선택');
                     },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
@@ -213,7 +210,6 @@ class _Recruiting3State extends State<Recruiting3> {
                   ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pop();
-                      print('취소');
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Color(0xFF666666),
